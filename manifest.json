@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "GSC Bulk CSV Remover",
+  "version": "2.2",
+  "description": "Bulk 404 URL remover for Google Search Console",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["https://search.google.com/search-console/*"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 340px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 16px; margin: 0; background: #f8f9fa; color: #202124; box-sizing: border-box; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    h3 { margin: 0; color: #1a73e8; font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+    .version { font-size: 11px; background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+    
+    .upload-box { background: #ffffff; border: 2px dashed #dadce0; border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 12px; transition: all 0.2s ease; cursor: pointer; }
+    .upload-box:hover { border-color: #1a73e8; background: #f8fbff; }
+    .upload-box label { font-size: 12px; font-weight: 600; color: #1a73e8; cursor: pointer; display: block; }
+    .upload-box input { display: none; }
+    #fileName { font-size: 11px; color: #5f6368; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    
+    textarea { width: 100%; height: 95px; box-sizing: border-box; padding: 10px; font-size: 11px; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; font-family: monospace; background: #fff; resize: vertical; outline: none; }
+    textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.15); }
+    
+    .control-group { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 8px; font-weight: 500; color: #3c4043; }
+    .control-row:last-child { margin-bottom: 0; }
+    .control-row input { width: 75px; padding: 5px 8px; border: 1px solid #dadce0; border-radius: 6px; text-align: center; font-size: 12px; outline: none; }
+    .control-row input:focus { border-color: #1a73e8; }
+    
+    .btn-group { display: flex; gap: 8px; margin-bottom: 12px; }
+    button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    #startBtn { background: #1a73e8; color: #fff; box-shadow: 0 2px 4px rgba(26,115,232,0.2); }
+    #startBtn:hover { background: #1557b0; }
+    #stopBtn { background: #d93025; color: #fff; }
+    #stopBtn:hover { background: #b3261e; }
+    #clearBtn { background: #5f6368; color: #fff; flex: 0.6; }
+    #clearBtn:hover { background: #3c4043; }
+    
+    #status-box { padding: 10px 12px; background: #ffffff; border: 1px solid #dadce0; border-left: 4px solid #1a73e8; border-radius: 6px; font-size: 11px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    #status { font-weight: 600; color: #1a73e8; word-break: break-all; margin-bottom: 6px; line-height: 1.3; }
+    .counter-row { display: flex; justify-content: space-between; font-weight: 500; font-family: monospace; color: #5f6368; margin-top: 3px; font-size: 11px; }
+    .submitted-count { color: #137333; font-weight: 600; }
+    .failed-count { color: #d93025; font-weight: 600; }
+    .remaining-count { color: #1a73e8; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h3>GSC Bulk Remover</h3>
+    <span class="version">v3.0 Pro</span>
+  </div>
+
+  <div class="upload-box" onclick="document.getElementById('csvFile').click()">
+    <label for="csvFile">📁 Upload CSV or TXT File</label>
+    <input type="file" id="csvFile" accept=".csv,.txt">
+    <div id="fileName">No file selected</div>
+  </div>
+
+  <textarea id="urls" placeholder="Or paste your URLs here (one per line)..."></textarea>
+  
+  <div class="control-group">
+    <div class="control-row">
+      <label for="limit">Submit Limit:</label>
+      <input type="number" id="limit" value="100" min="1" max="1000">
+    </div>
+    <div class="control-row">
+      <label for="delay">Step Delay (ms):</label>
+      <input type="number" id="delay" value="2000" min="1000" step="500">
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+    <button id="clearBtn">Clear</button>
+  </div>
+
+  <div id="status-box">
+    <div id="status">Status: Ready to start</div>
+    <div class="counter-row">
+      <span>Submitted: <strong id="submittedCount" class="submitted-count">0</strong></span>
+      <span>Failed: <strong id="failedCount" class="failed-count">0</strong></span>
+      <span>Remaining: <strong id="remainingCount" class="remaining-count">0</strong></span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
