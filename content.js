@@ -40,25 +40,86 @@ if (!globalThis.__gscBulkRemoverV34) {
   }
   async function pause(runId, message) {
     if (!(await active(runId))) return;
-    await chrome.storage.local.set({isRunning:false,statusText:message});
+    await chrome.storage.local.set({isRunning:false,paused:true,statusText:message});
+  }
+  // Google uses two different dialogs: "New Request" then "Remove URL?".
+  // Never search only the first dialog for the final Submit button.
+  function dialogs() {
+    return [...new Set(document.querySelectorAll('[role="dialog"],[aria-modal="true"],.mat-mdc-dialog-container,.mat-dialog-container,.cdk-overlay-pane'))]
+      .filter(visible).filter(el => !el.parentElement?.closest('[role="dialog"], [aria-modal="true"]'));
+  }
+  function requestDialog() {
+    return dialogs().find(el => /new request|temporarily remove url|নতুন অনুরোধ/i.test(el.innerText || '') &&
+      !!el.querySelector('input')) || null;
+  }
+  function confirmDialog(url) {
+    return dialogs().find(el => /remove url\?|submit request|অনুরোধ জমা/i.test(el.innerText || '') &&
+      (el.innerText || '').includes(url)) || null;
+  }
+  function matchingButton(root, words) {
+    if (!root) return null;
+    return [...root.querySelectorAll('button,[role="button"]')].find(el =>
+      visible(el) && !el.disabled && el.getAttribute('aria-disabled') !== 'true' &&
+      words.some(w => norm(el.innerText || el.textContent || el.getAttribute('aria-label')) === norm(w)));
   }
   async function inputUrl(url) {
-    const inputs=[...document.querySelectorAll('input[type="text"],input:not([type]),input[type="url"]')].filter(el=>visible(el)&&!el.disabled&&!el.readOnly);
-    const field=inputs.at(-1);
-    if(!field) return false;
-    const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-    field.focus(); setter.call(field,url);
-    field.dispatchEvent(new Event('input',{bubbles:true}));
-    field.dispatchEvent(new Event('change',{bubbles:true}));
-    return field.value===url;
+    const until = Date.now() + 12000;
+    while (Date.now() < until && !stopRequested) {
+      const dialog = requestDialog();
+      if (dialog) {
+        const inputs = [...dialog.querySelectorAll('input[type="text"],input[type="url"],input:not([type])')]
+          .filter(el => visible(el) && !el.disabled && !el.readOnly);
+        const field = inputs.find(el => /enter url|url|ইউআরএল/i.test([el.placeholder,el.getAttribute('aria-label')].filter(Boolean).join(' '))) || (inputs.length === 1 ? inputs[0] : null);
+        if (field) {
+          const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+          field.focus(); setter.call(field,url);
+          field.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:url}));
+          field.dispatchEvent(new Event('change',{bubbles:true}));
+          await sleep(300);
+          if (field.value === url) return true;
+        }
+      }
+      await sleep(150);
+    }
+    return false;
   }
-  function hasConfirmation(url, beforeText) {
+  async function findDialogButton(words, timeout=8000) {
+    const until=Date.now()+timeout;
+    while(Date.now()<until && !stopRequested) {
+      const match=matchingButton(requestDialog(),words);
+      if(match) return match;
+      await sleep(150);
+    }
+    return null;
+  }
+  async function findConfirmationSubmit(url, timeout=12000) {
+    const until=Date.now()+timeout;
+    while(Date.now()<until && !stopRequested) {
+      const dialog=confirmDialog(url);
+      if(dialog) {
+        const match=matchingButton(dialog,labels.submit);
+        if(match) return match;
+      }
+      await sleep(150);
+    }
+    return null;
+  }
+  function anyOpenRemovalDialog() {
+    return dialogs().some(el => /new request|remove url\?|temporarily remove url/i.test(el.innerText || ''));
+  }
+  function visibleRequestRows(url) {
+    return [...document.querySelectorAll('tr,[role="row"]')]
+      .filter(el => visible(el) && (el.innerText || '').includes(url) &&
+        /processing request|temporarily remove url|removal approved|request/i.test(el.innerText || ''));
+  }
+  function hasConfirmation(url, beforeText, beforeRows) {
     const text=document.body.innerText || '';
-    // Require a positive UI acknowledgement; button clicks alone do not count.
-    const positive=/request (was |has been )?submitted|removal request submitted|request successfully submitted|অনুরোধ.*জমা/i.test(text);
-    const newText=text!==beforeText;
-    const row=[...document.querySelectorAll('tr,[role="row"]')].some(el=>visible(el) && el.innerText.includes(url)) && !beforeText.includes(url);
-    return (positive && newText) || row;
+    // A new visible GSC table row is stronger evidence than a button click.
+    const newRow=visibleRequestRows(url).length > beforeRows;
+    // A success toast may be present when the table has not refreshed yet.
+    const success=/request (was |has been )?submitted|removal request submitted|request successfully submitted|অনুরোধ.*জমা/i.test(text);
+    const acknowledgement=success && text !== beforeText && !confirmDialog(url);
+    return newRow || acknowledgement;
   }
   function duplicateDialog() {
     // Only accept Google's explicit duplicate-request dialog; never treat a generic error as a duplicate.
@@ -91,7 +152,7 @@ if (!globalThis.__gscBulkRemoverV34) {
       while(await active(runId)) {
         const d=await chrome.storage.local.get(['removalQueue','stepDelay','processedCount','failedCount','failedUrls']);
         const queue=d.removalQueue||[];
-        if(!queue.length) { await chrome.storage.local.set({isRunning:false,currentUrl:'',statusText:'Queue complete. Review the confirmed count.'}); break; }
+        if(!queue.length) { await chrome.storage.local.set({isRunning:false,paused:false,currentUrl:'',statusText:'Queue complete. Review the confirmed count.'}); break; }
         const url=queue[0], delay=Math.max(1500,Math.min(30000,Number(d.stepDelay)||2500));
         if(!(await active(runId))) break;
         await chrome.storage.local.set({currentUrl:url,statusText:'Checking HTTP status before submission…'});
@@ -104,13 +165,14 @@ if (!globalThis.__gscBulkRemoverV34) {
           const latest=await chrome.storage.local.get(['removalQueue','failedCount','failedUrls']);
           if(latest.removalQueue?.[0]!==url) { await pause(runId,'Paused: Queue changed during safety check.'); break; }
           await record(runId,url,'skipped',check?.reason||'HTTP safety check rejected URL',check?.status||'unknown');
-          await chrome.storage.local.set({removalQueue:latest.removalQueue.slice(1),failedCount:(latest.failedCount||0)+1,
+          await chrome.storage.local.set({removalQueue:latest.removalQueue.slice(1),
             failedUrls:[...(latest.failedUrls||[]),`${url} — SKIPPED (${check?.status||'unknown'}: ${check?.reason||'unverified'})`],
             statusText:`Skipped unsafe URL (${check?.status||'unknown'}).`,currentUrl:''});
           continue;
         }
         if(!(await active(runId))) break;
         await chrome.storage.local.set({statusText:'HTTP 404/410 verified. Opening new request…'});
+        if (anyOpenRemovalDialog()) { await pause(runId,'Paused: An existing GSC removal dialog is open. Cancel or finish it manually, then verify GSC history before restarting.'); break; }
         const open=await findButton(labels.newRequest);
         if(!(await active(runId))) break;
         if(!open) { await record(runId,url,'failed','New request button not found',check.status); await pause(runId,'Paused: New request button not found. Check GSC language/page.'); break; }
@@ -118,18 +180,19 @@ if (!globalThis.__gscBulkRemoverV34) {
         open.click(); await sleep(delay);
         if(!(await active(runId))) break;
         if(!(await active(runId))) break;
-        if(!(await inputUrl(url))) { await record(runId,url,'failed','URL input field missing',check.status); await pause(runId,'Paused: URL field not found. Queue preserved.'); break; }
+        if(!(await inputUrl(url))) { await record(runId,url,'failed','URL input field missing',check.status); await pause(runId,'Paused: New Request URL field not ready. Queue preserved; check GSC dialog.'); break; }
         await sleep(500);
-        const next=await findButton(labels.next,4000);
+        const next=await findDialogButton(labels.next,6500);
         if(!(await active(runId))) break;
         if(!next) { await record(runId,url,'failed','Next button missing or URL rejected',check.status); await pause(runId,'Paused: Next button missing or URL rejected. Queue preserved.'); break; }
         if(!(await active(runId))) break;
         next.click(); await sleep(delay);
-        const submit=await findButton(labels.submit,4500);
+        const submit=await findConfirmationSubmit(url,12000);
         if(!(await active(runId))) break;
-        if(!submit) { await record(runId,url,'failed','Submit button unavailable',check.status); await pause(runId,'Paused: Submit request unavailable. Review URL and dialog; queue preserved.'); break; }
+        if(!submit) { await record(runId,url,'failed','Submit button unavailable',check.status); await pause(runId,'Paused: Confirmation dialog or matching Submit Request button unavailable. Verify the displayed URL; queue preserved.'); break; }
         if(!(await active(runId))) break;
         const before=document.body.innerText || '';
+        const beforeRows=visibleRequestRows(url).length;
         // Record uncertain outcome immediately: a click can submit even if the tab closes.
         if(!(await active(runId))) break;
         await record(runId,url,'unverified','Submit about to be clicked; outcome needs verification',check.status);
@@ -150,7 +213,7 @@ if (!globalThis.__gscBulkRemoverV34) {
             await pause(runId,'Paused: Queue changed while handling duplicate request.');
             break;
           }
-          await record(runId,url,'skipped','Already has an active GSC removal request (duplicate)',check.status);
+          await record(runId,url,'duplicate','Already has an active GSC removal request (duplicate)',check.status);
           await chrome.storage.local.set({
             removalQueue:latest.removalQueue.slice(1),
             failedUrls:[...(latest.failedUrls||[]),`${url} — DUPLICATE (active GSC request)`],
@@ -161,7 +224,7 @@ if (!globalThis.__gscBulkRemoverV34) {
           continue;
         }
         // If the page doesn't provide clear confirmation, never count a click as success.
-        if(!hasConfirmation(url,before)) {
+        if(!hasConfirmation(url,before,beforeRows)) {
           await record(runId,url,'unverified','Submit clicked but GSC confirmation not detected; check manually',check.status);
           await pause(runId,`Paused: Could not verify submission of ${url}. Check Search Console manually before resuming to avoid duplicate requests.`);
           break;
@@ -183,6 +246,10 @@ if (!globalThis.__gscBulkRemoverV34) {
     if(message?.action==='START_REMOVAL' && typeof message.runId==='string') {
       if(processing) { sendResponse({started:false,reason:'Previous run is still winding down. Wait a moment and retry.'}); return; }
       run(message.runId); sendResponse({started:true});
+    } else if(message?.action==='CAN_RESUME') {
+      sendResponse({safe:!processing&&!anyOpenRemovalDialog(),reason:anyOpenRemovalDialog()?'Close and review the open GSC removal dialog first':'A previous run is still active'});
+    } else if(message?.action==='GET_RUN_STATUS') {
+      sendResponse({processing,runId:currentRunId});
     } else if(message?.action==='STOP_REMOVAL') {
       stopRequested=true;
       sendResponse({stopped:true});

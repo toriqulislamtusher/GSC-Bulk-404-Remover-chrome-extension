@@ -1,86 +1,155 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GSC Bulk Remover</title><style>
+:root{color-scheme:light;--blue:#175cd3;--blue2:#1049b4;--ink:#172b4d;--muted:#71819a;--line:#e3eaf4;--surface:#fff;--bg:#f4f7fc}
 *{box-sizing:border-box}
-html,body{margin:0;width:360px;height:540px;overflow:hidden}
-body{font:12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#24334b;display:flex;flex-direction:column}
+html,body{margin:0;width:380px;height:600px;overflow:hidden}
+body{font:12px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column}
 button,input,textarea,select{font:inherit}
-button{cursor:pointer;border:0;border-radius:9px;font-weight:650;padding:9px 11px}
+button{border:0;border-radius:10px;cursor:pointer;font-weight:700;padding:10px 12px;transition:background .14s,box-shadow .14s}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #6ca5ff;outline-offset:2px}
 button:disabled{opacity:.5;cursor:not-allowed}
-.top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 7px}
-h1{font-size:16px;letter-spacing:-.4px;margin:0;color:#165bb6}
-.tag{font-size:10px;color:#165bb6;background:#e6efff;border-radius:20px;padding:4px 7px}
-.tabs{display:flex;gap:6px;padding:0 14px 9px}
-.tabs button{flex:1;background:#e7edf5;color:#38516e;padding:9px}
-.tabs button.selected{background:#1967d2;color:#fff}
+.top{display:flex;align-items:center;justify-content:space-between;padding:15px 16px 11px;background:white;border-bottom:1px solid var(--line)}
+h1{font-size:16px;letter-spacing:-.45px;margin:0;color:#153b75;font-weight:800}
+h1:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;background:#1d68d9;margin-right:8px;box-shadow:0 0 0 3px #e4efff}
+.tag{font-size:10px;color:#1555bd;background:#edf4ff;border:1px solid #e0eafd;border-radius:20px;padding:4px 9px;font-weight:750}
+.tabs{display:flex;gap:4px;margin:10px 15px 10px;padding:4px;border-radius:12px;background:#e9eff8}
+.tabs button{flex:1;color:#5b6d86;background:transparent;padding:9px 10px;border-radius:9px;font-size:11.5px}
+.tabs button.selected{background:#fff;color:#1555bd;box-shadow:0 2px 8px #1b47851a}
 .hidden{display:none!important}
-#workPanel,#reportPanel{min-height:0;flex:1;display:flex;flex-direction:column;gap:9px;padding:0 14px 12px}
-.notice{font-size:10.5px;color:#775115;background:#fff8e9;border:1px solid #f4dfa9;border-radius:8px;padding:7px 9px}
-.panel{background:#fff;border:1px solid #dce4ef;border-radius:11px;padding:10px}
-.entry{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1}
-.upload{display:flex;justify-content:center;align-items:center;gap:6px;border:1.5px dashed #aac4e6;border-radius:8px;color:#155dbd;font-weight:650;padding:9px;cursor:pointer}
+#workPanel,#reportPanel{min-height:0;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 15px 11px}
+.notice{font-size:10.5px;color:#78551e;background:#fff9ed;border:1px solid #f1dfb8;border-radius:10px;padding:9px 11px;line-height:1.5}
+.notice:before{content:"●";color:#d79a25;margin-right:7px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 12px;box-shadow:0 2px 8px #213b6507}
+.entry{overflow:hidden;display:flex;flex-direction:column;gap:7px;min-height:0;flex:1;padding-bottom:10px}
+.upload{display:flex;justify-content:center;align-items:center;gap:6px;border:1.5px dashed #9abbee;border-radius:10px;background:#f7faff;color:#1459c4;font-weight:750;padding:12px;cursor:pointer;transition:background .15s}
+.upload:hover{background:#eaf3ff}
 .upload input{display:none}
-.small{font-size:10.5px;color:#687b94;margin:0}
+.small{font-size:10.5px;color:var(--muted);margin:0}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.link{color:#155dbd;background:transparent;padding:2px 4px;font-size:11px}
-textarea{display:block;width:100%;min-height:60px;flex:1;resize:none;border:1px solid #cdd8e7;border-radius:8px;padding:9px;font:11px/1.5 ui-monospace,Consolas,monospace;outline:none}
-textarea:focus{border-color:#1967d2}
+.row strong{font-size:11.5px}
+.link{color:#175cd3;background:transparent;padding:3px 4px;font-size:10.5px}
+.link:hover{text-decoration:underline}
+textarea{display:block;width:100%;height:76px;min-height:60px;max-height:110px;flex:1 1 auto;resize:none;border:1px solid #d4dfef;border-radius:10px;padding:10px;background:#fcfdff;font:10.5px/1.6 ui-monospace,Consolas,monospace;outline:none;color:#293d59}
+textarea:focus{border-color:#5b95ef;box-shadow:0 0 0 3px #e6f0ff}
 #validation{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.settings{flex-shrink:0}
-.settings summary{font-weight:650;color:#36506f;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none}
+.preview{flex-shrink:0;min-height:36px;display:flex;align-items:center;overflow-wrap:anywhere;font-size:10.5px;color:#1b5a96;background:#eaf4ff;border:1px solid #d9eaff;border-radius:8px;padding:7px 9px;font-weight:650}
+.preview.warning{background:#fff5e7;color:#875517;border-color:#f7e1b6}
+.detail{font-size:10px;color:#667c96;overflow-wrap:anywhere;max-height:30px;overflow:auto}
+.detail:empty{display:none}
+.settings{flex-shrink:0;padding:10px 12px}
+.settings summary{font-weight:700;color:#39516e;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none}
 .settings summary::-webkit-details-marker{display:none}
-.settings summary:after{content:"⌄";color:#68809d;font-size:16px}
+.settings summary:after{content:"⌄";color:#607c9f;font-size:16px}
 .settings[open] summary:after{content:"⌃"}
-.settings .row{margin-top:9px}
-.settings input{width:90px;border:1px solid #cdd8e7;border-radius:7px;padding:6px}
+.settings .row{margin-top:10px}
+.settings input{width:92px;border:1px solid #d4dfef;border-radius:8px;padding:7px}
 .buttons{display:flex;gap:7px;flex-shrink:0}
-.buttons button{flex:1}
-.primary{background:#1967d2;color:#fff}
-.danger{background:#c83c34;color:#fff}
-.neutral{background:#e6ebf2;color:#34435a}
-.status-panel{flex-shrink:0;padding:9px 11px}
-.status{font-weight:700;overflow-wrap:anywhere}
-#currentUrl{font:10px ui-monospace,monospace;color:#687b94;overflow-wrap:anywhere;max-height:28px;overflow:auto}
-.counts{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#60728a}
-.counts strong{font-size:15px;color:#25374f}
-#failedUrls{max-height:34px;overflow:auto;font-size:10px;white-space:pre-wrap}
+.buttons button{flex:1;min-width:0}
+.primary{background:var(--blue);color:#fff}
+.primary:hover{background:var(--blue2)}
+.danger{background:#fff0ee;color:#b72c2a;border:1px solid #f4d6d4}
+.danger:hover{background:#ffe5e2}
+.neutral{background:#eaf0f8;color:#435b78}
+.neutral:hover{background:#e1e9f4}
+.status-panel{flex-shrink:0;padding:10px 12px;max-height:143px;overflow:auto;border-left:3px solid #2474dd}
+.status{font-weight:750;overflow-wrap:anywhere;font-size:11.5px}
+#currentUrl{font:10px ui-monospace,monospace;color:#70829a;overflow-wrap:anywhere;max-height:28px;overflow:auto;margin-top:3px}
+#currentUrl:empty{display:none}
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px;font-size:10px;color:#71819a}
+.counts span{background:#f6f8fc;border-radius:9px;padding:6px 9px}
+.counts strong{font-size:18px;color:#253c5e;font-weight:800}
+#failedUrls{max-height:33px;overflow:auto;font-size:10px;white-space:pre-wrap;color:#8a5360;margin-top:3px}
+#failedUrls:empty{display:none}
 .report-body{display:flex;flex-direction:column;min-height:0;flex:1;gap:9px}
-.report-counts{display:flex;justify-content:space-between;gap:4px;font-size:10px;color:#5d718b}
-.report-counts b{display:block;font-size:16px;color:#263951}
+.report-body>strong{font-size:13px}
+.report-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;font-size:9.5px;color:#6b7d96}
+.report-counts span{overflow:hidden;background:#f5f8fc;border-radius:8px;padding:6px 7px;min-width:0}
+.report-counts b{display:block;font-size:17px;color:#263e60}
 .report-controls,.report-actions{display:flex;gap:7px}
-.report-controls select{flex:1;min-width:0;border:1px solid #cdd8e7;border-radius:8px;padding:8px;background:#fff}
+.report-controls select{flex:1;min-width:0;border:1px solid #d6e1ef;border-radius:9px;padding:9px;background:#fff;color:#324d70}
 .report-controls button{flex:0}
 .report-actions button{flex:1}
-#reportList{flex:1;min-height:0;overflow:auto;border-top:1px solid #e7edf5}
-.report-item{padding:9px 0;border-bottom:1px solid #e7edf5;overflow-wrap:anywhere}
-.report-item strong{font-size:11px}
-.report-item small{display:block;color:#697d95}
-.report-item .url{font:10px ui-monospace,monospace}
+#reportList{flex:1;min-height:0;overflow:auto;border:1px solid #e6edf5;border-radius:10px;padding:0 10px;background:#fcfdff}
+.report-item{padding:10px 0;border-bottom:1px solid #e7edf5;overflow-wrap:anywhere}
+.report-item:last-child{border-bottom:0}
+.report-item strong{font-size:11px;color:#1f4b80}
+.report-item small{display:block;color:#74849a;margin-top:2px}
+.report-item .url{font:10px/1.5 ui-monospace,monospace}
 #reportMessage{min-height:13px}
+
+/* v3.6.4 layout repair: no flex-shrunk URL summary or clipped textarea */
+html,body{width:380px;height:600px;min-height:600px;max-height:600px}
+body{overflow:hidden}
+#workPanel,#reportPanel{overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:14px;gap:10px}
+#workPanel>.notice,#workPanel>.entry,#workPanel>.summary-card,#workPanel>.settings,#workPanel>.buttons,#workPanel>.status-panel{flex:0 0 auto;min-height:auto}
+.entry{display:flex;flex:none;overflow:visible;padding:12px;gap:8px}
+.entry textarea{height:90px;min-height:90px;max-height:90px;flex:none;resize:vertical}
+.summary-card{background:#fff;border:1px solid #dbe6f6;border-radius:13px;padding:11px 12px;display:flex;flex-direction:column;gap:7px;box-shadow:0 2px 8px #213b6507;overflow:visible}
+.summary-title{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:12px;font-weight:800;color:#213d65}
+.summary-hint{font-size:9.5px;font-weight:500;color:#71819a}
+.preview{display:block;min-height:0;padding:9px 10px;line-height:1.55;white-space:normal;overflow:visible;overflow-wrap:anywhere;font-size:11px}
+.detail{max-height:85px;overflow:auto;line-height:1.55}
+#validation{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.5}
+.settings{overflow:visible}
+.buttons{position:sticky;bottom:0;z-index:3;background:#f4f7fc;padding:8px 0 3px;margin:0;box-shadow:0 -6px 12px #f4f7fce8}
+.buttons button{padding:11px 7px;min-height:40px}
+.status-panel{max-height:none;overflow:visible;padding:12px}
+#currentUrl{max-height:56px;overflow:auto;line-height:1.55}
+#failedUrls{max-height:80px;overflow:auto}
+.report-body{flex:none;min-height:100%;overflow:visible}
+#reportPanel .report-counts{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#reportPanel .report-counts span{white-space:normal;overflow-wrap:anywhere;font-size:9px}
+#reportList{min-height:180px;max-height:260px;flex:none;overflow:auto}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
+
+/* v3.7.0: scrollable popup with persistent, readable analysis */
+html,body{height:600px;max-height:600px;width:380px}
+#workPanel,#reportPanel{scrollbar-gutter:stable;overflow-y:auto;overflow-x:hidden;min-height:0;gap:10px}
+.entry,.summary-card,.settings,.status-panel{flex:0 0 auto!important;overflow:visible}
+.entry textarea{height:90px;min-height:90px;max-height:90px;flex:none}
+.analysis-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;background:transparent;border:0;padding:0}
+.analysis-grid[hidden]{display:none}
+.analysis-metric{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:9px 3px;background:#eff5ff;border:1px solid #dbe8fa;border-radius:10px}
+.analysis-metric b{font-size:20px;color:#174c9a;line-height:1.2}
+.analysis-metric small{font-size:10px;color:#607794;margin-top:3px}
+.buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;position:sticky;bottom:0;z-index:5;padding:8px 0;background:#f4f7fc}
+.buttons button{font-size:10.5px;padding:9px 3px;min-width:0}
+.counts{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.counts span{padding:7px 4px;font-size:9px;min-width:0}
+.counts strong{font-size:17px}
+.status-panel{max-height:none!important;overflow:visible!important}
+.progress-label{margin-top:9px;font-size:10px;color:#627795}
+.progress-track{height:7px;border-radius:10px;background:#e6eefb;margin-top:5px;overflow:hidden}
+#progressBar{height:100%;background:#1c68d8;width:0;transition:width .2s}
+#failedUrls{max-height:80px;overflow:auto}
+.report-counts{grid-template-columns:repeat(4,minmax(0,1fr))}
+#reportList{min-height:180px;max-height:270px;overflow:auto}
 </style></head><body>
-<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.5.5 · Free</span></div>
+<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.7.0 · Free</span></div>
 <div class="tabs"><button id="workTab" class="selected" type="button">Removal tool</button><button id="reportTab" type="button">Reports</button></div>
 <main id="workPanel">
-  <div class="notice">Safety: only verified 404/410 URLs. Live and redirect URLs are skipped. GSC removals are temporary.</div>
+  <div class="notice">Safety check: only verified HTTP 404/410 URLs are eligible. Live and redirected URLs are skipped. Removals are temporary.</div>
   <div class="panel entry">
-    <label class="upload" for="csvFile">↥ &nbsp; Upload CSV / TXT<input id="csvFile" type="file" accept=".csv,.txt,text/plain,text/csv"></label>
+    <label class="upload" for="csvFile">↑ &nbsp; Upload CSV / TXT<input id="csvFile" type="file" accept=".csv,.txt,text/plain,text/csv"></label>
     <p id="fileName" class="small">No file selected</p>
     <div class="row"><strong>URL list</strong><button class="link" id="clearTextBtn" type="button">Clear URLs</button></div>
     <textarea id="urls" placeholder="Paste one URL per line, or upload a file"></textarea>
     <p id="validation" class="small">Only http:// and https:// URLs are accepted.</p>
   </div>
+  <section class="summary-card" aria-label="URL analysis"><div class="summary-title">URL analysis <span class="summary-hint">Updated automatically</span></div><div id="preview" class="preview analysis-grid" hidden></div><p id="emptyPreview" class="small">Upload URLs to preview new, previously submitted, and review items.</p><div id="duplicateInfo" class="detail"></div><div id="unverifiedInfo" class="detail"></div></section>
   <details class="panel settings" id="settings">
     <summary>Advanced settings</summary>
     <div class="row"><label for="limit">Submission limit</label><input id="limit" type="number" min="1" max="1000" value="100"></div>
     <div class="row"><label for="delay">Delay (ms)</label><input id="delay" type="number" min="1500" max="30000" step="500" value="2500"></div>
   </details>
-  <div class="buttons"><button id="setupAccessBtn" class="neutral" type="button" title="Grant website access in a separate tab">Access</button><button id="startBtn" class="primary">Start</button><button id="stopBtn" class="danger">Stop</button><button id="clearBtn" class="neutral">Reset</button></div>
-  <div class="panel status-panel"><div id="status" class="status" role="status">Ready</div><div id="currentUrl"></div><div class="counts"><span>Confirmed<br><strong id="submittedCount">0</strong></span><span>Failed<br><strong id="failedCount">0</strong></span><span>Remaining<br><strong id="remainingCount">0</strong></span></div><div id="failedUrls"></div></div>
+  <div class="buttons"><button id="startBtn" class="primary">Start</button><button id="stopBtn" class="danger">Stop</button><button id="resumeBtn" class="neutral">Resume</button><button id="clearBtn" class="neutral">Reset</button></div>
+  <div class="panel status-panel"><div class="row"><span class="small">Batch status</span><strong id="batchState">Ready</strong></div><div id="status" class="status" role="status">Ready</div><div class="row progress-label"><span id="progressLabel">No active batch</span><strong id="progressPercent">0%</strong></div><div class="progress-track"><div id="progressBar"></div></div><div id="currentUrl"></div><div class="counts"><span>Confirmed<br><strong id="submittedCount">0</strong></span><span>Skipped<br><strong id="skippedCount">0</strong></span><span>Failed<br><strong id="failedCount">0</strong></span><span>Remaining<br><strong id="remainingCount">0</strong></span></div><div id="failedUrls"></div></div>
 </main>
 <section id="reportPanel" class="hidden">
  <div class="panel report-body">
-   <strong>Submission history</strong>
+   <strong>Submission history</strong><p id="batchDate" class="small">No batch selected</p>
    <p class="small">Confirmed = GSC acknowledgement. Unverified = no confirmation detected.</p>
-   <div class="report-counts"><span>Confirmed<b id="reportConfirmed">0</b></span><span>Skipped<b id="reportSkipped">0</b></span><span>Failed<b id="reportFailed">0</b></span><span>Unverified<b id="reportUnverified">0</b></span><span>Pending<b id="reportPending">0</b></span></div>
-   <div class="report-controls"><select id="reportFilter" aria-label="Filter report"><option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="skipped">Skipped</option><option value="failed">Failed</option><option value="unverified">Unverified</option><option value="pending">Pending</option></select><button id="refreshReport" class="neutral" type="button">Refresh</button></div>
+   <div class="report-controls"><select id="reportScope" aria-label="Report scope"><option value="batch">Current batch</option><option value="all">All history</option><option value="previous">Previous batch</option></select><select id="batchSelector" aria-label="Select previous batch" class="hidden"></select></div><div class="report-counts"><span>Already<b id="reportAlready">0</b></span><span>Review<b id="reportReview">0</b></span><span>Duplicate<b id="reportDuplicate">0</b></span><span>Confirmed<b id="reportConfirmed">0</b></span><span>Skipped<b id="reportSkipped">0</b></span><span>Failed<b id="reportFailed">0</b></span><span>Unverified<b id="reportUnverified">0</b></span><span>Pending<b id="reportPending">0</b></span></div>
+   <div class="report-controls"><select id="reportFilter" aria-label="Filter report"><option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="already">Already submitted</option><option value="review">Needs review</option><option value="skipped">Skipped</option><option value="duplicate">Active duplicate</option><option value="failed">Failed</option><option value="unverified">Unverified</option><option value="pending">Pending</option></select><button id="refreshReport" class="neutral" type="button">Refresh</button></div>
    <div id="reportList" aria-live="polite"></div>
    <div class="report-actions"><button id="exportCsv" class="primary" type="button">Export CSV</button><button id="exportTxt" class="neutral" type="button">Export TXT</button></div>
    <p id="reportMessage" class="small"></p>

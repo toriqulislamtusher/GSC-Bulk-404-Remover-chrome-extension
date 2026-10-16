@@ -42,9 +42,12 @@ A free, locally running Chrome Manifest V3 extension that helps submit temporary
 - Refreshed UI and clearer temporary-removal warning.
 
 ## v3.3 safety mode
-- On Start, the user grants optional access to the URL origins for HTTP checks.
+- Website access is requested at install/update time for HTTP safety checks; no separate access tab is used.
 - Immediately before each submission, the extension fetches the URL with `redirect: manual` and `credentials: omit`. Only explicit 404/410 responses are eligible. 2xx, 3xx, opaque redirects, network errors, blocked or unknown statuses are skipped.
 - Skipped URLs are counted under Failed and listed with their reason; they are **not** submitted.
 - IMPORTANT: browser requests may differ from Googlebot responses; a 404/410 can be transient or vary by user-agent, IP, or authentication. Verify the URLs yourself before using this tool.
 - HTTP 404/410 is an optional conservative policy, **not** a Google Search Console requirement. A temporary removal is not permanent deletion.
 - This extension uses UI automation, which may break when Search Console changes. Test in a controlled property before publishing.
+
+### Website permissions (v3.5.6)
+This edition requires HTTP/HTTPS host access at install/update time to verify submitted URL statuses without per-domain prompts. Chrome may display a broad website-access warning. Users can restrict access in Chrome, in which case Start fails closed. This permission may require additional Chrome Web Store review and justification.
