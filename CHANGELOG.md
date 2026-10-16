@@ -1,3 +1,9 @@
+# v3.7.3 — 2026-10-17
+
+- Preserve URL punctuation with quoted-field-aware CSV/TSV import. Reject malformed quoting.
+- Canonicalize before deduplication: host case, default ports and fragments.
+- 77 mock regression checks passed; no new live submissions.
+
 # v3.7.2 — 2026-10-17
 
 - Reject literal and percent-encoded asterisks in input, property/run guards, and background HTTP checks.

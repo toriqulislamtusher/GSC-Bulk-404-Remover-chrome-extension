@@ -61,11 +61,45 @@ function validUrl(value) {
   catch { return false; }
 }
 function parseUrls(text) {
-  // Supports one URL per line, or simple CSV/TSV containing a URL column.
-  const candidates = text.split(/\r?\n/).flatMap(line => line.split(/[,;\t]/))
-    .map(s => s.trim().replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
-  const urls = [...new Set(candidates.filter(validUrl))];
-  return {urls, ignored: candidates.length - urls.length};
+  // URL-list mode preserves punctuation. CSV mode requires a header or quoted first cell.
+  // Never guess that punctuation inside a complete URL is a column separator.
+  text=String(text).replace(/^\uFEFF/,'');
+  const lines=text.split(/\r?\n/).filter(line=>line.trim());
+  if(!lines.length) return {urls:[],ignored:0};
+  const first=lines[0].trim();
+  const delimited=!/^https?:\/\//i.test(first);
+  let candidates=[];
+  if(!delimited) candidates=lines.map(line=>line.trim());
+  else {
+    const separators=[',',';','\t'];
+    const counts=separators.map(separator=>{
+      let quoted=false,n=0;
+      for(let i=0;i<first.length;i++) {
+        if(first[i]==='"') { if(quoted && first[i+1]==='"') i++; else quoted=!quoted; }
+        else if(!quoted && first[i]===separator) n++;
+      }
+      return n;
+    });
+    const separator=separators[counts.indexOf(Math.max(...counts))];
+    let cell='',quoted=false,closed=false,atStart=true;
+    const finish=()=>{candidates.push(cell.trim());cell='';closed=false;atStart=true;};
+    for(let i=0;i<text.length;i++) {
+      const ch=text[i];
+      if(quoted) {
+        if(ch==='"') { if(text[i+1]==='"'){cell+='"';i++;} else {quoted=false;closed=true;} }
+        else cell+=ch;
+      } else if(ch===separator || ch==='\n' || ch==='\r') {
+        finish();if(ch==='\r' && text[i+1]==='\n') i++;
+      } else if(ch==='"' && atStart) {quoted=true;atStart=false;}
+      else if(closed && !/\s/.test(ch)) return {urls:[],ignored:lines.length,error:'Malformed CSV: unexpected text after a quoted field.'};
+      else {cell+=ch;if(!/\s/.test(ch)) atStart=false;}
+    }
+    if(quoted) return {urls:[],ignored:lines.length,error:'Malformed CSV: close every quoted field.'};
+    finish();
+  }
+  candidates=candidates.filter(Boolean);
+  const urls=[...new Set(candidates.filter(value=>!/[\r\n\t]/.test(value) && validUrl(value)).map(canonical))];
+  return {urls,ignored:candidates.length-urls.length};
 }
 async function render() {
   const d = await chrome.storage.local.get(['removalQueue','isRunning','statusText','stepDelay','submitLimit','processedCount','failedCount','currentUrl','failedUrls','submissionHistory','runId','batchSkips','batchTotal','batchStartedAt','paused']);
@@ -96,12 +130,13 @@ async function render() {
 }
 document.addEventListener('DOMContentLoaded', render);
 chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local' && Object.keys(changes).some(k=>['removalQueue','isRunning','statusText','processedCount','failedCount','submissionHistory','batchSkips','runId','paused','batchTotal'].includes(k))) render();});
-$('urls').addEventListener('input', () => { editing = true; chrome.storage.local.set({draftUrls:$('urls').value,draftFilename:''}); const {urls, ignored} = parseUrls($('urls').value); $('validation').textContent = `${urls.length} unique valid URLs; ${ignored} ignored/duplicate entries.`; updatePreview(); });
+$('urls').addEventListener('input', () => { editing = true; chrome.storage.local.set({draftUrls:$('urls').value,draftFilename:''}); const {urls, ignored, error} = parseUrls($('urls').value); $('validation').textContent = error || `${urls.length} unique valid URLs; ${ignored} ignored/duplicate entries.`; updatePreview(); });
 $('csvFile').addEventListener('change', async e => {
   const file = e.target.files[0]; if (!file) return;
   if (!/\.(csv|txt)$/i.test(file.name)) { $('status').textContent = 'Choose a .csv or .txt file.'; return; }
   if (file.size > 2 * 1024 * 1024) { $('status').textContent = 'File too large (maximum 2 MB).'; return; }
-  const {urls, ignored} = parseUrls(await file.text());
+  const {urls, ignored, error} = parseUrls(await file.text());
+  if(error) { $('status').textContent=error; return; }
   $('urls').value = urls.join('\n'); editing = true;
   $('fileName').textContent = file.name;
   $('validation').textContent = `${urls.length} unique valid URLs; ${ignored} ignored/duplicate entries.`;

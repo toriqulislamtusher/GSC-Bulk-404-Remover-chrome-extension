@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GSC Bulk CSV Remover",
-  "version": "3.7.2",
+  "version": "3.7.3",
   "description": "GSC temporary removal with URL safety verification, duplicate classification, batch reporting and guarded resume.",
   "permissions": [
     "activeTab",
