@@ -66,14 +66,19 @@ if (!window.gscBulkRemoverLoaded) {
     }
 
     if (!data.removalQueue || data.removalQueue.length === 0) {
-      await chrome.storage.local.set({ isRunning: false, statusText: 'All URLs successfully processed!' });
+      await chrome.storage.local.set({ isRunning: false, currentUrl: '', statusText: 'All URLs successfully processed!' });
       alert("GSC Bulk Remover: All URLs have been processed successfully!");
       return;
     }
 
     const urls = data.removalQueue;
     const currentUrl = urls[0];
-    await chrome.storage.local.set({ statusText: `Submitting: ${currentUrl.substring(0, 25)}...` });
+    
+    // Set current processing URL to storage so popup can display and user can copy it
+    await chrome.storage.local.set({ 
+      currentUrl: currentUrl,
+      statusText: `Submitting request...` 
+    });
 
     try {
       const newReqBtn = findButtonByText(['New request', 'নতুন অনুরোধ']);

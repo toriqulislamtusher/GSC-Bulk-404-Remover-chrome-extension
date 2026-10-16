@@ -1,5 +1,5 @@
 async function updateUI() {
-  const data = await chrome.storage.local.get(['removalQueue', 'isRunning', 'statusText', 'stepDelay', 'submitLimit', 'processedCount', 'failedCount']);
+  const data = await chrome.storage.local.get(['removalQueue', 'isRunning', 'statusText', 'stepDelay', 'submitLimit', 'processedCount', 'failedCount', 'currentUrl']);
   const queue = data.removalQueue || [];
   
   if (queue.length > 0 && document.getElementById('urls').value.trim() === '') {
@@ -15,6 +15,7 @@ async function updateUI() {
   document.getElementById('submittedCount').innerText = processed;
   document.getElementById('failedCount').innerText = failed;
   document.getElementById('remainingCount').innerText = remaining;
+  document.getElementById('currentUrlBox').value = data.currentUrl || '';
 
   if (data.statusText) {
     document.getElementById('status').innerText = `Status: ${data.statusText}`;
@@ -47,6 +48,7 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
       removalQueue: unique, 
       processedCount: 0,
       failedCount: 0,
+      currentUrl: '',
       statusText: `${unique.length} URLs loaded successfully!` 
     });
     updateUI();
@@ -78,6 +80,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     removalQueue: rawUrls, 
     processedCount: 0,
     failedCount: 0,
+    currentUrl: '',
     isRunning: true, 
     stepDelay: delay, 
     submitLimit: limitInput, 
@@ -101,6 +104,6 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
   document.getElementById('urls').value = '';
   document.getElementById('csvFile').value = '';
   document.getElementById('fileName').innerText = 'No file selected';
-  await chrome.storage.local.set({ removalQueue: [], processedCount: 0, failedCount: 0, isRunning: false, statusText: 'Cleared successfully.' });
+  await chrome.storage.local.set({ removalQueue: [], processedCount: 0, failedCount: 0, currentUrl: '', isRunning: false, statusText: 'Cleared successfully.' });
   updateUI();
 });
