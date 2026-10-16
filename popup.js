@@ -8,13 +8,18 @@ function isGscRemovalsPage(rawUrl) {
 'use strict';
 const $ = id => document.getElementById(id);
 let editing = false;
+let currentPageUrl = '';
+chrome.tabs.query({active:true,currentWindow:true}).then(([tab])=>{currentPageUrl=tab?.url||'';updatePreview();}).catch(()=>{});
 let currentReportScope = 'batch';
 let selectedBatchId = ''; 
 let batchPreview = {newUrls:[],confirmed:[],unverified:[]};
 const TERMINAL = ['confirmed','duplicate','skipped','failed','unverified'];
 function normalizedHistory(rows, url) { return rows.filter(r => isSameUrl(r.url,url)).sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||''))); }
 function classifyHistory(rows,url) {
-  const match=normalizedHistory(rows,url);
+  const property=GscSafety.property(currentPageUrl);
+  const relevant=normalizedHistory(rows,url).filter(r=>!r.propertyKey || r.propertyKey===property);
+  const reviewed=relevant.reduce((latest,r)=>Math.max(latest,Date.parse(r.retryAllowedAt)||0),0);
+  const match=relevant.filter(r=>(Date.parse(r.timestamp)||0)>reviewed || (!reviewed && !r.timestamp));
   if(match.some(r=>r.status==='unverified')) return 'review';
   if(match.some(r=>r.status==='confirmed'||r.status==='duplicate')) return 'already';
   return 'new';
@@ -22,7 +27,7 @@ function classifyHistory(rows,url) {
 function progressState(rows,runId,queue,isRunning) {
   const current=rows.filter(r=>r.runId===runId);
   const done=new Set(current.filter(r=>TERMINAL.includes(r.status)).map(r=>canonical(r.url)));
-  return {current,pending:isRunning?queue.filter(u=>!done.has(canonical(u))):[]};
+  return {current,pending:queue.filter(u=>!done.has(canonical(u)))};
 }
 
 function canonical(url) { try { const u=new URL(url); u.hash=''; return u.href; } catch { return url; } }
@@ -69,7 +74,7 @@ async function render() {
   if (d.stepDelay && document.activeElement !== $('delay')) $('delay').value = d.stepDelay;
   if (d.submitLimit && document.activeElement !== $('limit')) $('limit').value = d.submitLimit;
   $('submittedCount').textContent = d.processedCount || 0;
-  $('failedCount').textContent = d.failedCount || 0;
+  $('failedCount').textContent = (d.submissionHistory||[]).filter(r=>r.runId===d.runId && r.status==='failed').length;
   $('remainingCount').textContent = queue.length;
   const records=(d.submissionHistory||[]).filter(r=>d.runId && r.runId===d.runId);
   const skipped=(d.batchSkips||[]).length+records.filter(r=>['skipped','duplicate'].includes(r.status)).length;
@@ -122,19 +127,10 @@ $('startBtn').addEventListener('click', async () => {
   }
   // A URL-prefix property can only receive requests for URLs inside that property.
   // Domain properties allow subdomains; verify before any action.
-  const property = new URL(tab.url).searchParams.get('resource_id');
-  if (!property) { $('status').textContent = 'Cannot verify the selected GSC property. Open the property Removals page again.'; return; }
-  let belongs;
-  try {
-    if (property.startsWith('sc-domain:')) {
-      const domain = property.slice('sc-domain:'.length).toLowerCase();
-      belongs = selected.every(value => { const host = new URL(value).hostname.toLowerCase(); return host === domain || host.endsWith('.' + domain); });
-    } else {
-      const prefix = new URL(property);
-      belongs = selected.every(value => value.startsWith(prefix.href) && new URL(value).origin === prefix.origin);
-    }
-  } catch { belongs = false; }
-  if (!belongs) { $('status').textContent = 'URL list does not match the selected GSC property. No requests started.'; return; }
+  currentPageUrl = tab.url;
+  const property = GscSafety.property(tab.url);
+  if (!property) { $('status').textContent = 'Cannot verify the selected GSC property. Open its Removals page again.'; return; }
+  if (!selected.every(url=>GscSafety.belongs(property,url))) { $('status').textContent = 'URL list does not match the selected GSC property. No requests started.'; return; }
   // Required host permissions are approved on installation/update, not per website.
   // If Chrome site-access controls withhold them, fail closed before starting.
   const origins = [...new Set(selected.map(value => `${new URL(value).origin}/*`))];
@@ -160,9 +156,9 @@ $('startBtn').addEventListener('click', async () => {
 
   // The safety notice is permanently visible in the popup. Avoid window.confirm(), which can close the extension popup.
   const runId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  await chrome.storage.local.set({removalQueue:ready,processedCount:0,failedCount:0,failedUrls:[],currentUrl:'',isRunning:true,stepDelay:delay,submitLimit:limit,statusText:`Starting ${ready.length} new URL(s). ${alreadyConfirmed.length} already submitted; ${uncertain.length} require review.`,batchSkips:skippedRows,runId,runTabId:tab.id,batchTotal:selected.length,batchStartedAt:new Date().toISOString(),paused:false});
+  await chrome.storage.local.set({removalQueue:ready,processedCount:0,failedCount:0,failedUrls:[],currentUrl:'',isRunning:true,stepDelay:delay,submitLimit:limit,statusText:`Starting ${ready.length} new URL(s). ${alreadyConfirmed.length} already submitted; ${uncertain.length} require review.`,batchSkips:skippedRows,runId,runTabId:tab.id,runProperty:property,batchTotal:selected.length,batchStartedAt:new Date().toISOString(),paused:false});
   try {
-    await chrome.scripting.executeScript({target:{tabId:tab.id},files:['content.js']});
+    await chrome.scripting.executeScript({target:{tabId:tab.id},files:['safety.js','content.js']});
     const result=await chrome.tabs.sendMessage(tab.id,{action:'START_REMOVAL',runId});
     if(!result?.started) await chrome.storage.local.set({isRunning:false,statusText:result?.reason||'Could not start content script.'});
   } catch(err) { await chrome.storage.local.set({isRunning:false,statusText:`Unable to start: ${err.message}`}); }
@@ -182,18 +178,19 @@ $('clearBtn').addEventListener('click', async () => {
   if (d.isRunning) { $('status').textContent = 'Stop the process before resetting.'; return; }
   // Reset affects only the queue and counters, never the stored history.
   $('urls').value = ''; $('csvFile').value = ''; $('fileName').textContent = 'No file selected'; editing = true;
-  await chrome.storage.local.set({removalQueue:[],processedCount:0,failedCount:0,failedUrls:[],batchSkips:[],currentUrl:'',statusText:'Batch reset. Submission history was kept.',runId:null,runTabId:null,batchTotal:0,paused:false,draftUrls:'',draftFilename:''});
+  await chrome.storage.local.set({removalQueue:[],processedCount:0,failedCount:0,failedUrls:[],batchSkips:[],currentUrl:'',statusText:'Batch reset. Submission history was kept.',runId:null,runTabId:null,runProperty:null,batchTotal:0,paused:false,draftUrls:'',draftFilename:''});
   await render();
 });
 
 $('resumeBtn').addEventListener('click',async()=>{
-  const d=await chrome.storage.local.get(['isRunning','runId','runTabId','removalQueue','submissionHistory']);
+  const d=await chrome.storage.local.get(['isRunning','runId','runTabId','runProperty','removalQueue','submissionHistory']);
   if(d.isRunning || !d.runId || !(d.removalQueue||[]).length) { $('status').textContent='No paused batch to resume.'; return; }
-  const uncertain=(d.submissionHistory||[]).some(r=>r.runId===d.runId && r.status==='unverified' && d.removalQueue.some(u=>isSameUrl(u,r.url)));
+  const uncertain=(d.submissionHistory||[]).some(r=>r.runId===d.runId && r.status==='unverified' && !r.retryAllowedAt && d.removalQueue.some(u=>isSameUrl(u,r.url)));
   if(uncertain) { $('status').textContent='Resume blocked: a request has an unverified outcome. Check GSC and resolve it manually first.'; return; }
   try {
     const tab=await chrome.tabs.get(d.runTabId);
     if(!isGscRemovalsPage(tab.url||'')) throw Error('Original GSC Removals tab is no longer available');
+    if(!d.runProperty || GscSafety.property(tab.url)!==d.runProperty || !d.removalQueue.every(url=>GscSafety.belongs(d.runProperty,url))) throw Error('Selected property changed or batch property is unknown. Return to the original property or start a new reviewed batch.');
     const reply=await chrome.tabs.sendMessage(d.runTabId,{action:'CAN_RESUME'});
     if(!reply?.safe) throw Error(reply?.reason||'An open GSC dialog must be reviewed and closed first');
     await chrome.storage.local.set({isRunning:true,paused:false,statusText:'Resuming preserved batch…'});
@@ -247,7 +244,23 @@ async function renderReport() {
     const title=document.createElement('strong');title.textContent=statusNames[r.status]||r.status;
     const url=document.createElement('div');url.className='url';url.textContent=r.url;
     const reason=document.createElement('small');reason.textContent=[r.reason||'',r.httpStatus?`HTTP ${r.httpStatus}`:'',r.timestamp?new Date(r.timestamp).toLocaleString():''].filter(Boolean).join(' · ');
-    div.append(title,url,reason);root.append(div);
+    div.append(title,url,reason);
+    if(['unverified','confirmed','duplicate'].includes(r.status) && !r.retryAllowedAt) {
+      const review=document.createElement('button'); review.className='neutral';
+      review.textContent='I checked GSC — allow retry'; review.disabled=!!d.isRunning;
+      review.addEventListener('click',async()=>{
+        const latest=await chrome.storage.local.get(['isRunning','submissionHistory']);
+        if(latest.isRunning) { $('reportMessage').textContent='Stop the batch before reviewing history.'; return; }
+        const rows=latest.submissionHistory||[];
+        const target=rows.find(row=>row.runId===r.runId && row.url===r.url && row.timestamp===r.timestamp && row.status===r.status);
+        if(!target) return;
+        target.retryAllowedAt=new Date().toISOString();
+        await chrome.storage.local.set({submissionHistory:rows});
+        await renderReport(); await updatePreview();
+      });
+      div.append(review);
+    }
+    root.append(div);
   }
   $('batchDate').textContent=currentReportScope==='batch'?(d.batchStartedAt?`Started ${new Date(d.batchStartedAt).toLocaleString()}`:'No batch selected'):`${new Set(history.map(r=>r.runId).filter(Boolean)).size} saved batches`;
   $('reportMessage').textContent=shown.length>500?`Showing first 500 of ${shown.length}. Export to see all.`:`${shown.length} matching records · ${currentReportScope==='batch'?'Current batch':currentReportScope==='previous'?'Previous batch':'All history'}. Reset does not erase history.`;

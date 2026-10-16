@@ -124,7 +124,7 @@ html,body{height:600px;max-height:600px;width:380px}
 .report-counts{grid-template-columns:repeat(4,minmax(0,1fr))}
 #reportList{min-height:180px;max-height:270px;overflow:auto}
 </style></head><body>
-<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.7.0 · Free</span></div>
+<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.7.1 · Free</span></div>
 <div class="tabs"><button id="workTab" class="selected" type="button">Removal tool</button><button id="reportTab" type="button">Reports</button></div>
 <main id="workPanel">
   <div class="notice">Safety check: only verified HTTP 404/410 URLs are eligible. Live and redirected URLs are skipped. Removals are temporary.</div>
@@ -147,7 +147,7 @@ html,body{height:600px;max-height:600px;width:380px}
 <section id="reportPanel" class="hidden">
  <div class="panel report-body">
    <strong>Submission history</strong><p id="batchDate" class="small">No batch selected</p>
-   <p class="small">Confirmed = GSC acknowledgement. Unverified = no confirmation detected.</p>
+   <p class="small">Confirmed = new matching GSC request row. Check GSC before allowing a retry; this does not cancel requests.</p>
    <div class="report-controls"><select id="reportScope" aria-label="Report scope"><option value="batch">Current batch</option><option value="all">All history</option><option value="previous">Previous batch</option></select><select id="batchSelector" aria-label="Select previous batch" class="hidden"></select></div><div class="report-counts"><span>Already<b id="reportAlready">0</b></span><span>Review<b id="reportReview">0</b></span><span>Duplicate<b id="reportDuplicate">0</b></span><span>Confirmed<b id="reportConfirmed">0</b></span><span>Skipped<b id="reportSkipped">0</b></span><span>Failed<b id="reportFailed">0</b></span><span>Unverified<b id="reportUnverified">0</b></span><span>Pending<b id="reportPending">0</b></span></div>
    <div class="report-controls"><select id="reportFilter" aria-label="Filter report"><option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="already">Already submitted</option><option value="review">Needs review</option><option value="skipped">Skipped</option><option value="duplicate">Active duplicate</option><option value="failed">Failed</option><option value="unverified">Unverified</option><option value="pending">Pending</option></select><button id="refreshReport" class="neutral" type="button">Refresh</button></div>
    <div id="reportList" aria-live="polite"></div>
@@ -155,5 +155,5 @@ html,body{height:600px;max-height:600px;width:380px}
    <p id="reportMessage" class="small"></p>
  </div>
 </section>
-<script src="popup.js"></script>
+<script src="safety.js"></script><script src="popup.js"></script>
 </body></html>

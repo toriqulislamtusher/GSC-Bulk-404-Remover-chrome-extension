@@ -35,8 +35,14 @@ if (!globalThis.__gscBulkRemoverV34) {
     return null;
   }
   async function active(runId) {
-    const d=await chrome.storage.local.get(['isRunning','runId']);
-    return !stopRequested && d.isRunning===true && d.runId===runId;
+    const d=await chrome.storage.local.get(['isRunning','runId','runProperty','removalQueue']);
+    if(stopRequested || !d.isRunning || d.runId!==runId) return false;
+    if(!d.runProperty || GscSafety.property(location.href)!==d.runProperty || !(d.removalQueue||[]).every(url=>GscSafety.belongs(d.runProperty,url))) {
+      stopRequested=true;
+      await chrome.storage.local.set({isRunning:false,paused:true,statusText:'Paused: selected property changed or queue does not match the original property.'});
+      return false;
+    }
+    return true;
   }
   async function pause(runId, message) {
     if (!(await active(runId))) return;
@@ -108,18 +114,25 @@ if (!globalThis.__gscBulkRemoverV34) {
     return dialogs().some(el => /new request|remove url\?|temporarily remove url/i.test(el.innerText || ''));
   }
   function visibleRequestRows(url) {
-    return [...document.querySelectorAll('tr,[role="row"]')]
-      .filter(el => visible(el) && (el.innerText || '').includes(url) &&
-        /processing request|temporarily remove url|removal approved|request/i.test(el.innerText || ''));
+    const canonical=value=>{try {const u=new URL(value);u.hash='';return u.href;}catch{return '';}};
+    const target=canonical(url);
+    return [...document.querySelectorAll('tr,[role="row"]')].filter(row=>
+      visible(row) && /processing request|temporarily remove url|removal approved|request/i.test(row.innerText||'') &&
+      [...row.querySelectorAll('a,td,[role="cell"]')].some(cell=>
+        visible(cell) && [cell.getAttribute('href'), ...(cell.innerText||'').split(/\s+/)].some(value=>value && canonical(value)===target)));
   }
-  function hasConfirmation(url, beforeText, beforeRows) {
-    const text=document.body.innerText || '';
-    // A new visible GSC table row is stronger evidence than a button click.
-    const newRow=visibleRequestRows(url).length > beforeRows;
-    // A success toast may be present when the table has not refreshed yet.
-    const success=/request (was |has been )?submitted|removal request submitted|request successfully submitted|অনুরোধ.*জমা/i.test(text);
-    const acknowledgement=success && text !== beforeText && !confirmDialog(url);
-    return newRow || acknowledgement;
+  function hasConfirmation(url, beforeRows) {
+    // Only a new exact-URL request row counts. Generic page text/toasts cannot prove this request succeeded.
+    return !confirmDialog(url) && visibleRequestRows(url).length > beforeRows;
+  }
+  async function waitForConfirmation(runId,url,beforeRows) {
+    const until=Date.now()+8000;
+    do {
+      if(!(await active(runId))) return false;
+      if(hasConfirmation(url,beforeRows)) return true;
+      await sleep(150);
+    } while(Date.now()<until && !stopRequested);
+    return false;
   }
   function duplicateDialog() {
     // Only accept Google's explicit duplicate-request dialog; never treat a generic error as a duplicate.
@@ -134,11 +147,11 @@ if (!globalThis.__gscBulkRemoverV34) {
     return false;
   }
   async function record(runId,url,status,reason,httpStatus=null) {
-    const d=await chrome.storage.local.get(['submissionHistory']);
+    const d=await chrome.storage.local.get(['submissionHistory','runProperty']);
     const rows=d.submissionHistory||[];
     // Replace the record for this URL within this run instead of double-counting it.
     const index=rows.findIndex(r=>r.runId===runId&&r.url===url);
-    const row={runId,url,status,reason,httpStatus,timestamp:new Date().toISOString()};
+    const row={runId,url,status,reason,httpStatus,propertyKey:d.runProperty,timestamp:new Date().toISOString()};
     if(index>=0) rows[index]=row; else rows.push(row);
     await chrome.storage.local.set({submissionHistory:rows});
   }
@@ -191,7 +204,6 @@ if (!globalThis.__gscBulkRemoverV34) {
         if(!(await active(runId))) break;
         if(!submit) { await record(runId,url,'failed','Submit button unavailable',check.status); await pause(runId,'Paused: Confirmation dialog or matching Submit Request button unavailable. Verify the displayed URL; queue preserved.'); break; }
         if(!(await active(runId))) break;
-        const before=document.body.innerText || '';
         const beforeRows=visibleRequestRows(url).length;
         // Record uncertain outcome immediately: a click can submit even if the tab closes.
         if(!(await active(runId))) break;
@@ -224,7 +236,8 @@ if (!globalThis.__gscBulkRemoverV34) {
           continue;
         }
         // If the page doesn't provide clear confirmation, never count a click as success.
-        if(!hasConfirmation(url,before,beforeRows)) {
+        if(!(await waitForConfirmation(runId,url,beforeRows))) {
+          if(!(await active(runId))) break;
           await record(runId,url,'unverified','Submit clicked but GSC confirmation not detected; check manually',check.status);
           await pause(runId,`Paused: Could not verify submission of ${url}. Check Search Console manually before resuming to avoid duplicate requests.`);
           break;

@@ -1,3 +1,7 @@
+# v3.7.1 — 2026-10-17
+
+Property guards, exact-URL confirmation, corrected counters/Pending reports, and explicit retry review. See RELEASE_NOTES_3.7.1.md and TEST_REPORT_3.7.1.md.
+
 # v3.5.9 changes
 
 - Preview new, previously confirmed and unverified URLs before Start.
