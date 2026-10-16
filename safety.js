@@ -1,6 +1,13 @@
 'use strict';
 // Shared, idempotent guards for popup and injected content script.
 globalThis.GscSafety = Object.freeze({
+  concrete(raw) {
+    try {
+      const url = new URL(raw);
+      return ['http:', 'https:'].includes(url.protocol) && !!url.hostname &&
+        !url.username && !url.password && !/\*|%2a/i.test(url.href);
+    } catch { return false; }
+  },
   property(raw) {
     try {
       const page = new URL(raw);
@@ -21,7 +28,7 @@ globalThis.GscSafety = Object.freeze({
   belongs(property, raw) {
     try {
       const url = new URL(raw);
-      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || !property) return false;
+      if (!this.concrete(raw) || !property) return false;
       if (property.startsWith('sc-domain:')) {
         const domain = property.slice(10);
         return url.hostname === domain || url.hostname.endsWith('.' + domain);

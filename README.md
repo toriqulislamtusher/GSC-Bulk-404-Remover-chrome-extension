@@ -1,10 +1,10 @@
 # GSC Bulk CSV Remover — Google Search Console Bulk URL Removal Chrome Extension
 
-**Version 3.7.1 · Maintained by [toriqulislamtusher](https://github.com/toriqulislamtusher) · Guide checked: October 17, 2026**
+**Version 3.7.2 · Maintained by [toriqulislamtusher](https://github.com/toriqulislamtusher) · Guide checked: October 17, 2026**
 
 GSC Bulk CSV Remover is a free **Google Search Console bulk URL removal Chrome extension** for website owners and SEO teams managing URLs they are authorized to remove. Import a CSV/TXT file or paste a URL list to submit temporary removal requests for URLs that pass the extension’s HTTP 404/410 check. It automates the visible Search Console interface; it does not use an official removal API.
 
-This independent project is not an official Google product. The guide was prepared with AI assistance and checked against the v3.7.1 source and the test evidence below.
+This independent project is not an official Google product. The guide was prepared with AI assistance and checked against the v3.7.2 source and the test evidence below.
 
 ## Start here: download → extract → install → use
 
@@ -12,11 +12,13 @@ You need **Google Chrome on a computer** and a Google account with permission to
 
 > **Before starting:** this tool sends temporary removal requests to Google. It does not delete website files. Review every URL and test with 1–3 URLs on a property you manage first. Only URLs returning HTTP **404 or 410** can pass this build’s safety check.
 
+Wildcard patterns (`*` or encoded `%2A`) are unsupported and rejected. Supply individual URLs. A skipped URL is not a failed submission. A confirmed GSC request may still be processing. If a prior request is marked Review, check its exact URL in GSC; do not allow retry when the request already exists.
+
 ### 1. Download the extension
 
-**[Download GSC Bulk Remover v3.7.1 ZIP](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/download/v3.7.1/GSC_Bulk_Remover_v3_7_1.zip)**
+**[Download GSC Bulk Remover v3.7.2 ZIP](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/download/v3.7.2/GSC_Bulk_Remover_v3_7_2.zip)**
 
-Alternatively, open the [v3.7.1 release page](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/tag/v3.7.1), expand **Assets**, and choose **GSC_Bulk_Remover_v3_7_1.zip**. Use that named extension ZIP for this guide; GitHub also lists automatic source-code archives.
+Alternatively, open the [v3.7.2 release page](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/tag/v3.7.2), expand **Assets**, and choose **GSC_Bulk_Remover_v3_7_2.zip**. Use that named extension ZIP for this guide; GitHub also lists automatic source-code archives.
 
 ### 2. Extract the ZIP into a folder you will keep
 
@@ -32,7 +34,7 @@ Alternatively, open the [v3.7.1 release page](https://github.com/toriqulislamtus
 2. Turn on **Developer mode** in the upper-right corner.
 3. Click **Load unpacked** in the upper-left area.
 4. Select the extracted folder that directly contains **manifest.json**, then confirm the folder selection.
-5. Check that **GSC Bulk CSV Remover** appears, is enabled, and shows version **3.7.1**.
+5. Check that **GSC Bulk CSV Remover** appears, is enabled, and shows version **3.7.2**.
 6. Click Chrome’s **Extensions** puzzle icon beside the address bar, then pin **GSC Bulk CSV Remover** so you can open it easily.
 
 Chrome may show a broad website-access warning because this build checks HTTP/HTTPS URLs. Review the [permissions and privacy information](#permissions-and-privacy) before using it. Managed work or school browsers may prevent Developer mode or manual extension installation; ask your administrator if these controls are unavailable.
@@ -107,11 +109,11 @@ Available limits: **1–1000** entries (default **100**); delay: **1500–30000 
 2. Download and extract the new release into a temporary folder.
 3. Copy the new version’s files into the **same folder already loaded in Chrome**, replacing the matching files. Keep the original folder path.
 4. Open **chrome://extensions**, find the extension, and click its **Reload** control. Check the displayed version.
-5. Reload the GSC page before starting a fresh reviewed batch. Old batches without saved property information cannot Resume in v3.7.1.
+5. Reload the GSC page before starting a fresh reviewed batch. Old batches without saved property information cannot Resume in v3.7.2.
 
 Avoid removing/reinstalling the extension or loading a second copy from a different folder unless you intend to use a separate installation. Local history may not transfer to another extension ID, Chrome profile, or device. A CSV/TXT report is a backup for your reference; this version has no history-import feature.
 
-## v3.7.1 features
+## v3.7.2 features
 
 - Persistent URL draft and uploaded filename, scrollable popup, and three-column URL analysis.
 - Local-history exclusions for previously confirmed URLs and recorded active duplicates. Unverified prior requests require review and are not automatically retried.
@@ -131,11 +133,11 @@ Avoid removing/reinstalling the extension or loading a second copy from a differ
 - History is local and is not a complete GSC record. It does not sync across devices, Chrome profiles, or separately installed extension IDs. After manually checking GSC, use **I checked GSC — allow retry** on a history record to permit retry without erasing the record. Do not allow retry for a request that is still active. Resume is guarded, not guaranteed after tab reload, suspension, or browser interruption.
 - Google interface or language changes may break automation. The code handles English and some Bengali labels, not every language. Do not bypass Google's controls or submit excessive requests.
 - Input parsing supports simple comma-, semicolon-, or tab-separated fields and one URL per line; it is not a full quoted/multiline CSV parser.
-- See [v3.7.1 validation](TEST_REPORT_3.7.1.md) for automated and Chrome local-harness test coverage. A user-started live Chrome batch completed with 9/9 Confirmed, 0 Failed, and 0 Remaining; all nine URLs appeared in GSC as Processing request. Other live safety scenarios remain untested. Test cautiously on a property you control.
+- See [v3.7.2 validation](TEST_REPORT_3.7.2.md) for automated and Chrome local-harness test coverage. A user-started live Chrome batch completed with 9/9 Confirmed, 0 Failed, and 0 Remaining; all nine URLs appeared in GSC as Processing request. Other live safety scenarios remain untested. Test cautiously on a property you control.
 
 ## Permissions and privacy
 
-The manifest declares `activeTab`, `scripting`, and `storage`, plus host access to `https://search.google.com/*`, `http://*/*`, and `https://*/*`. Chrome may show a broad website-access warning. The normal v3.7.1 flow checks required access at Start; it does not request optional per-domain access in a separate setup tab.
+The manifest declares `activeTab`, `scripting`, and `storage`, plus host access to `https://search.google.com/*`, `http://*/*`, and `https://*/*`. Chrome may show a broad website-access warning. The normal v3.7.2 flow checks required access at Start; it does not request optional per-domain access in a separate setup tab.
 
 Draft URLs, filenames, settings, queue, progress, and history are stored in `chrome.storage.local`. History includes URLs, outcomes, reasons, HTTP statuses, batch IDs, and timestamps. Reports are generated locally and may contain sensitive URLs; exported files remain wherever you save them. Reset does not erase history.
 
@@ -144,8 +146,8 @@ Safety checks contact destination websites, which receive requested URLs and nor
 ## Maintainer, testing, and support
 
 - **Project maintainer:** [toriqulislamtusher](https://github.com/toriqulislamtusher). Review the [source code and change history](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/commits/main/) before granting website access.
-- **Observed experience:** in one user-started Chrome v3.7.1 batch, the popup reached **9/9 Confirmed, 0 Failed, 0 Remaining**. The same nine URLs appeared in GSC as **Processing request**. This is one observed batch, not proof that every property or Google interface variant works.
-- **Automated checks:** 34 isolated regression checks passed for URL/property guards, status gating, history handling, counters, and confirmation logic. See the [test report and its remaining limitations](TEST_REPORT_3.7.1.md).
+- **Observed experience:** in one user-started Chrome v3.7.2 batch, the popup reached **9/9 Confirmed, 0 Failed, 0 Remaining**. The same nine URLs appeared in GSC as **Processing request**. This is one observed batch, not proof that every property or Google interface variant works.
+- **Automated checks:** 34 isolated regression checks passed for URL/property guards, status gating, history handling, counters, and confirmation logic. See the [test report and its remaining limitations](TEST_REPORT_3.7.2.md).
 - **Privacy and support:** read [PRIVACY.md](PRIVACY.md) and [report reproducible issues](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues). Include the extension version and error text; redact private URLs and account details.
 - **Official reference:** Google’s [Removals tool documentation](https://support.google.com/webmasters/answer/9689846?hl=en) explains temporary removal and the steps needed for permanent removal. Google controls request processing and search results.
 
@@ -169,13 +171,17 @@ The extension submits removal requests; it does not improve rankings, guarantee 
 
 ## More information
 
-- [v3.7.1 release notes](RELEASE_NOTES_3.7.1.md)
+- [v3.7.2 release notes](RELEASE_NOTES_3.7.2.md)
 - [Changelog](CHANGELOG.md)
 - [Report an issue](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues): remove sensitive URLs and account information before posting.
 
-## v3.7.1 fixes
+## v3.7.2 fixes
 
 - Revalidate the original property at Resume and before processing actions; legacy batches without a saved property must be restarted after review.
 - Require a new exact-URL GSC request row for confirmation; generic success text is insufficient. If no matching row appears within eight seconds, pause as unverified.
 - Derive Failed count from batch records and retain Pending report entries while stopped.
 - Scope new history records by property and allow explicit manual retry review while preserving history. Legacy history without a property remains conservative across properties.
+
+## v3.7.2 validation
+
+39 automated VM/mock regression checks passed against the shipping source, plus JavaScript syntax checks. This is not a new live submission test or a guarantee of compatibility with every GSC interface. The earlier observed v3.7.1 batch completed 169 entries: 110 confirmed, 49 skipped, 9 previously submitted, 1 prior request requiring review. That prior URL was subsequently visible in GSC.

@@ -6,6 +6,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     try {
       const url = new URL(message.url);
       if (!['http:', 'https:'].includes(url.protocol) || !url.hostname || url.username || url.password) throw Error('Invalid URL');
+      if (/\*|%2a/i.test(url.href)) throw Error('Wildcard URLs are unsupported; provide individual URLs');
       const origin = `${url.origin}/*`;
       if (!(await chrome.permissions.contains({origins:[origin]}))) throw Error('Website access not granted');
       const controller = new AbortController();

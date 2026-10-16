@@ -57,7 +57,7 @@ async function updatePreview() {
 }
 
 function validUrl(value) {
-  try { const u = new URL(value); return ['http:', 'https:'].includes(u.protocol) && !!u.hostname; }
+  try { return GscSafety.concrete(value); }
   catch { return false; }
 }
 function parseUrls(text) {
@@ -88,7 +88,7 @@ async function render() {
   $('status').textContent = d.statusText || 'Ready';
   await renderReport();
   await updatePreview();
-  $('failedUrls').textContent = (d.failedUrls || []).length ? `Failed URLs:\n${d.failedUrls.join('\n')}` : '';
+  $('failedUrls').textContent = (d.failedUrls || []).length ? `Skipped / unsuccessful URLs:\n${d.failedUrls.join('\n')}` : '';
   // Allow Start to recover an orphaned session after tab reload.
   $('startBtn').disabled = false;
   $('stopBtn').disabled = !d.isRunning;

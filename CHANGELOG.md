@@ -1,3 +1,10 @@
+# v3.7.2 — 2026-10-17
+
+- Reject literal and percent-encoded asterisks in input, property/run guards, and background HTTP checks.
+- Relabel the mixed skip/error list as Skipped / unsuccessful URLs.
+- Preserve fail-closed exact-row confirmation; review uncertain requests in GSC before retrying.
+- 39 automated mock regression checks passed; no new live removal requests submitted.
+
 # v3.7.1 — 2026-10-17
 
 Property guards, exact-URL confirmation, corrected counters/Pending reports, and explicit retry review. See RELEASE_NOTES_3.7.1.md and TEST_REPORT_3.7.1.md.

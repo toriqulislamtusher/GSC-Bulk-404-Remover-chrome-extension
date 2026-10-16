@@ -124,7 +124,7 @@ html,body{height:600px;max-height:600px;width:380px}
 .report-counts{grid-template-columns:repeat(4,minmax(0,1fr))}
 #reportList{min-height:180px;max-height:270px;overflow:auto}
 </style></head><body>
-<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.7.1 · Free</span></div>
+<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.7.2 · Free</span></div>
 <div class="tabs"><button id="workTab" class="selected" type="button">Removal tool</button><button id="reportTab" type="button">Reports</button></div>
 <main id="workPanel">
   <div class="notice">Safety check: only verified HTTP 404/410 URLs are eligible. Live and redirected URLs are skipped. Removals are temporary.</div>
@@ -133,7 +133,7 @@ html,body{height:600px;max-height:600px;width:380px}
     <p id="fileName" class="small">No file selected</p>
     <div class="row"><strong>URL list</strong><button class="link" id="clearTextBtn" type="button">Clear URLs</button></div>
     <textarea id="urls" placeholder="Paste one URL per line, or upload a file"></textarea>
-    <p id="validation" class="small">Only http:// and https:// URLs are accepted.</p>
+    <p id="validation" class="small">Use individual http:// or https:// URLs. Wildcards (*) are unsupported and ignored.</p>
   </div>
   <section class="summary-card" aria-label="URL analysis"><div class="summary-title">URL analysis <span class="summary-hint">Updated automatically</span></div><div id="preview" class="preview analysis-grid" hidden></div><p id="emptyPreview" class="small">Upload URLs to preview new, previously submitted, and review items.</p><div id="duplicateInfo" class="detail"></div><div id="unverifiedInfo" class="detail"></div></section>
   <details class="panel settings" id="settings">
