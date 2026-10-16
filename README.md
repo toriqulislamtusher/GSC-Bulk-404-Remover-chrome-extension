@@ -1,6 +1,10 @@
-# GSC Bulk CSV Remover v3.7.1
+# GSC Bulk CSV Remover — Google Search Console Bulk URL Removal Chrome Extension
 
-A free Chrome Manifest V3 extension for submitting **temporary** Google Search Console URL removal requests from CSV/TXT files or pasted URLs. It automates the visible GSC interface; it does not use an official removal API.
+**Version 3.7.1 · Maintained by [toriqulislamtusher](https://github.com/toriqulislamtusher) · Guide checked: October 17, 2026**
+
+GSC Bulk CSV Remover is a free **Google Search Console bulk URL removal Chrome extension** for website owners and SEO teams managing URLs they are authorized to remove. Import a CSV/TXT file or paste a URL list to submit temporary removal requests for URLs that pass the extension’s HTTP 404/410 check. It automates the visible Search Console interface; it does not use an official removal API.
+
+This independent project is not an official Google product. The guide was prepared with AI assistance and checked against the v3.7.1 source and the test evidence below.
 
 ## Start here: download → extract → install → use
 
@@ -136,6 +140,32 @@ The manifest declares `activeTab`, `scripting`, and `storage`, plus host access 
 Draft URLs, filenames, settings, queue, progress, and history are stored in `chrome.storage.local`. History includes URLs, outcomes, reasons, HTTP statuses, batch IDs, and timestamps. Reports are generated locally and may contain sensitive URLs; exported files remain wherever you save them. Reset does not erase history.
 
 Safety checks contact destination websites, which receive requested URLs and normal network metadata such as your IP address; request credentials are omitted. Google receives removal requests through your signed-in GSC session. The current code has no developer-operated upload endpoint, analytics, or telemetry and does not request passwords. See [PRIVACY.md](PRIVACY.md).
+
+## Maintainer, testing, and support
+
+- **Project maintainer:** [toriqulislamtusher](https://github.com/toriqulislamtusher). Review the [source code and change history](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/commits/main/) before granting website access.
+- **Observed experience:** in one user-started Chrome v3.7.1 batch, the popup reached **9/9 Confirmed, 0 Failed, 0 Remaining**. The same nine URLs appeared in GSC as **Processing request**. This is one observed batch, not proof that every property or Google interface variant works.
+- **Automated checks:** 34 isolated regression checks passed for URL/property guards, status gating, history handling, counters, and confirmation logic. See the [test report and its remaining limitations](TEST_REPORT_3.7.1.md).
+- **Privacy and support:** read [PRIVACY.md](PRIVACY.md) and [report reproducible issues](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues). Include the extension version and error text; redact private URLs and account details.
+- **Official reference:** Google’s [Removals tool documentation](https://support.google.com/webmasters/answer/9689846?hl=en) explains temporary removal and the steps needed for permanent removal. Google controls request processing and search results.
+
+## Frequently asked questions
+
+### How do I bulk-submit URL removal requests in Google Search Console?
+
+Install the Chrome extension, open the correct GSC property’s Removals page, and import a CSV/TXT file or paste full URLs. Review the list and start a small batch first. This extension processes the requests through GSC’s visible interface and only attempts URLs with verified HTTP 404/410 responses.
+
+### Can I permanently remove URLs from Google with this extension?
+
+No. It submits temporary removal requests; it does not delete website content or guarantee permanent deindexing. Follow Google’s official removal guidance and address the source content and indexing controls for a permanent outcome.
+
+### Can I use this CSV URL removal tool for live pages or redirects?
+
+This build skips live responses, redirects, and responses it cannot verify. Its 404/410-only restriction is an extension safety policy, not a general Google requirement. Check the reason in Reports if a URL is skipped.
+
+### Does using the extension improve Google rankings?
+
+The extension submits removal requests; it does not improve rankings, guarantee indexing changes, or guarantee approval. Use it to manage authorized temporary removals, not as a ranking promise.
 
 ## More information
 
