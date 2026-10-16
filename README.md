@@ -192,3 +192,8 @@ Paste one complete URL per line. Commas and semicolons within a URL are preserve
 
 77 mock regression checks passed, including the four input defects found in the v3.7.2 audit. No new live submission was performed for v3.7.3. The earlier two-request live test was on v3.7.2.
 
+
+## Open source and contributions
+
+Licensed under [MIT](LICENSE). Anyone can fork, modify and propose improvements through a Pull Request. Official releases are maintained by [toriqulislamtusher](https://github.com/toriqulislamtusher). Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. A fork or PR does not automatically update the official extension. Maintainer review and automated checks are required by the contribution policy.
+
