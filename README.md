@@ -1,111 +1,93 @@
 # GSC Bulk CSV Remover
 
-**A free Chrome extension for managing bulk temporary URL removal requests in Google Search Console.**
+**Free Chrome extension for bulk URL removal requests in Google Search Console.**
 
-GSC Bulk CSV Remover helps SEO professionals, website owners, and webmasters simplify repetitive URL removal tasks through an easy-to-use Chrome extension.
+Import a CSV or TXT file, or paste URLs, to simplify repetitive temporary removal submissions. Built for SEO professionals, website owners, and webmasters managing their Search Console properties.
 
-Instead of manually submitting URLs one at a time, users can prepare a list of URLs and automate the submission workflow directly within Google Search Console.
+**Price: Free. No purchase or subscription is required to use this extension.** You need a Google account with access to the relevant Search Console property.
 
-> **Disclaimer:** This is an independent extension and is not affiliated with, endorsed by, or sponsored by Google.
+[Installation](#installation) · [Usage](#how-to-use) · [Privacy Policy](PRIVACY.md) · [Support](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues)
 
-## Key Features
+> Independent project by Toriqul Islam Tusher. Not affiliated with, endorsed by, or sponsored by Google.
 
-- **Bulk URL Submission:** Process multiple URL removal requests in one workflow.
-- **CSV & TXT Import:** Upload a list of URLs from CSV or TXT files.
-- **Manual URL Entry:** Paste URLs directly into the extension.
-- **Custom Submission Limit:** Control the number of URLs processed.
-- **Adjustable Step Delay:** Configure delays between automated actions.
-- **Progress Tracking:** Monitor processing counts and workflow status.
-- **Start & Stop Controls:** Manage the submission process from the extension popup.
-- **Local Browser Storage:** Store workflow settings and URL queues locally.
+## Features
 
-## How It Works
-
-1. Install the GSC Bulk CSV Remover extension in Google Chrome.
-2. Sign in to [Google Search Console](https://search.google.com/search-console).
-3. Select a website property you are authorized to manage.
-4. Navigate to **Indexing → Removals**.
-5. Open the extension popup.
-6. Paste your URLs or import a CSV/TXT file.
-7. Configure the submission limit and step delay.
-8. Click **Start** to begin processing removal requests.
-9. Monitor the progress and review the requests in Google Search Console.
-
-**Important:** Only submit removal requests for websites and properties you own or are authorized to manage.
+- Bulk temporary URL removal submissions through the Google Search Console interface.
+- CSV and TXT import, plus manual URL entry.
+- Adjustable submission limit and delay between actions.
+- Progress tracking and Start/Stop controls.
+- Local browser storage for workflow settings and URL queues.
 
 ## Installation
 
 ### Chrome Web Store
 
-The extension has been submitted to the Chrome Web Store and is currently awaiting review.
+The Chrome Web Store installation link is not available in this repository yet. Until it is added, use the free manual installation below.
 
-Once approved, the official installation link will be added here.
+### Free manual installation
 
-### Manual Installation (Developer Mode)
+1. On this repository page, click **Code → Download ZIP**.
+2. Extract the ZIP. Do not select the ZIP itself during installation.
+3. In Chrome, open `chrome://extensions/`.
+4. Enable **Developer mode**.
+5. Click **Load unpacked**.
+6. Select the extracted folder containing `manifest.json`.
+7. Pin **GSC Bulk CSV Remover** from Chrome's Extensions menu for easy access.
 
-1. Download or clone this GitHub repository.
-2. Open Chrome and navigate to `chrome://extensions/`.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the folder containing `manifest.json`.
-6. The extension will appear in your Chrome extensions list.
+Keep the extracted folder on your computer while using the extension.
 
-## Project Structure
+## How to use
 
-```text
-GSC-Bulk-Remover-chrome-extension/
-├── manifest.json
-├── popup.html
-├── popup.js
-├── content.js
-└── background.js
-```
+1. Sign in to [Google Search Console](https://search.google.com/search-console).
+2. Select a property you own or are authorized to manage.
+3. Open **Indexing → Removals**.
+4. Open the extension and paste URLs or import your CSV/TXT file.
+5. Review the URL list carefully. Exclude URLs that should remain visible in search.
+6. Configure the limit and delay. Start with a small test batch.
+7. Click **Start** and monitor progress. Use **Stop** to interrupt the workflow.
+8. Verify the request status directly in Search Console before retrying any URLs.
 
-The exact files included may vary by release.
+## Important: temporary removal
 
-## Permissions
+This extension helps submit removal requests. It does not delete website pages, guarantee permanent removal from Google Search, improve rankings, or submit URLs for indexing.
 
-The extension uses Chrome permissions to support its core functionality:
+For permanent removal, address the underlying page and indexing settings using the appropriate method for your website. Review [Google's official Removals tool documentation](https://support.google.com/webmasters/answer/9689846) before submitting requests.
 
-| Permission | Purpose |
-|---|---|
-| `activeTab` | Access the active browser tab when the user starts the workflow |
-| `scripting` | Execute packaged scripts within the relevant page |
-| `storage` | Save workflow settings and processing information locally |
-| Google Search Console host access | Interact with the Search Console URL removal interface |
+Only use authorized properties. The extension does not bypass Google's permissions, limits, or review process. Automated actions may fail because of interface changes, permissions, or restrictions.
 
-Permissions are intended to support the extension's stated functionality.
+## Privacy
 
-## Privacy & Data Handling
+Read the [Privacy Policy](PRIVACY.md) for data-handling information. Removal requests are submitted to Google through your signed-in Search Console session.
 
-GSC Bulk CSV Remover is designed to process user-provided URLs through Google Search Console.
+## Troubleshooting
 
-Workflow information, including URL queues and settings, is stored locally in Chrome.
+- **Nothing happens:** check that you are on the correct property's Removals page.
+- **Requests fail:** stop the workflow and check the page for errors, restrictions, or missing permissions.
+- **Some URLs were not processed:** check Search Console before retrying to avoid duplicate requests.
+- **The workflow breaks after an interface change:** report the steps to reproduce it through the support link below.
 
-The extension does not require a separate user account or operate a developer-controlled server for storing submitted URL lists.
+Redact private domains, URL lists, account details, and sensitive screenshots when reporting problems.
 
-For additional information, read the [Privacy Policy](PRIVACY.md).
+## Frequently asked questions
 
-## Important Information About URL Removals
+### Is it free?
 
-Google Search Console's Removals tool is intended for temporary removal requests.
+Yes. No purchase or subscription is required to use this extension.
 
-**Submitting a removal request does not guarantee permanent removal of a URL from Google's index.**
+### Can I remove URLs from any website?
 
-For permanent removal, website owners may need to remove or update the content, return an appropriate HTTP status code, or apply other indexing controls in accordance with Google's guidelines.
+No. You must have the required permissions for the selected Search Console property.
 
-Always verify the status of submitted requests directly in Google Search Console.
+### Is this an official Google extension?
 
-## Responsible Use
+No. This is an independent project.
 
-- Use the extension only with authorized Search Console properties.
-- Review URL lists carefully before starting bulk submissions.
-- Avoid submitting requests for URLs that should remain visible in search results.
-- Understand that automated submissions may fail due to interface changes, account permissions, or Google-imposed restrictions.
-- Follow Google's applicable terms and policies.
+### Does this permanently remove URLs?
 
-## Support & Bug Reports
+No. It assists with temporary removal requests. Review Google's documentation for the appropriate permanent removal method.
 
-Found a bug or have a feature suggestion?
+## Support
 
-[Open a GitHub Issue](https://github.com/toriqulislamtusher/G
+[Open a GitHub issue](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues) for bug reports, installation questions, or feature suggestions.
+
+Developed by [Toriqul Islam Tusher](https://github.com/toriqulislamtusher).
