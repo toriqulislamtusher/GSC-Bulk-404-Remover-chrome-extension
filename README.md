@@ -1,93 +1,50 @@
-# GSC Bulk CSV Remover
+## v3.4 Report & History
 
-**Free Chrome extension for bulk URL removal requests in Google Search Console.**
+- Reports tab: confirmed, skipped, failed, unverified and pending URLs with reasons.
+- Export filtered reports as CSV or TXT. History persists in local Chrome storage.
+- Previously confirmed or unverified URLs are excluded from new runs until the user reviews their records.
+- Confirmation is based on visible GSC UI feedback, not an official API acknowledgement.
+- All HTTP safety checks remain fail-closed; 404/410-only mode is not a guarantee of Googlebot equivalence.
+- Reports are local to this Chrome profile and may contain sensitive URLs.
+- Existing 404/red-arrow/trash-bin icons preserved.
 
-Import a CSV or TXT file, or paste URLs, to simplify repetitive temporary removal submissions. Built for SEO professionals, website owners, and webmasters managing their Search Console properties.
+# GSC Bulk CSV Remover v3.2.0
 
-**Price: Free. No purchase or subscription is required to use this extension.** You need a Google account with access to the relevant Search Console property.
+A free, locally running Chrome Manifest V3 extension that helps submit temporary Google Search Console URL removal requests from CSV/TXT or pasted URL lists.
 
-[Installation](#installation) · [Usage](#how-to-use) · [Privacy Policy](PRIVACY.md) · [Support](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues)
+## Important
+- Search Console removals are **temporary**, not permanent deletions. Remove or block the content appropriately if permanent removal is required.
+- Only use on properties and URLs you are authorized to manage.
+- **Review the selected Search Console property and URL list before starting.** This extension does not verify property ownership or URL membership automatically.
+- Google can change Search Console's interface. If submission cannot be confirmed, the extension **pauses** rather than claiming success. Check the request in Search Console before restarting; avoid duplicate requests.
+- Do not submit excessive requests or use the extension to bypass Google's controls.
 
-> Independent project by Toriqul Islam Tusher. Not affiliated with, endorsed by, or sponsored by Google.
+## Install locally
+1. Extract the ZIP.
+2. Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked**.
+3. Select the extracted `GSC_Bulk_Remover_v3_2` folder (the folder containing `manifest.json`).
+4. Open your property's Search Console **Removals** page.
+5. Upload a `.csv` or `.txt`, or paste one URL per line; review the list.
+6. Choose a limit and delay, then click **Start** and confirm.
 
-## Features
+## Notes
+- The CSV parser handles simple comma/semicolon/tab-separated URL fields, not fully quoted multiline CSV records.
+- The extension does not call a Google Search Console removal API; it interacts with the visible interface, which may vary by language and change over time.
+- A confirmed counter requires visible page feedback; it is not a server-side verification.
+- The extension stores its queue and counters in local Chrome extension storage.
+- To publish an update, test on a property you control, increment the manifest version, and submit a new ZIP through Chrome Web Store Developer Dashboard.
 
-- Bulk temporary URL removal submissions through the Google Search Console interface.
-- CSV and TXT import, plus manual URL entry.
-- Adjustable submission limit and delay between actions.
-- Progress tracking and Start/Stop controls.
-- Local browser storage for workflow settings and URL queues.
+## Changelog
+### 3.2.0
+- Safer submission confirmation and pause-on-uncertainty behavior.
+- Fixed inline HTML event handler incompatible with MV3 extension CSP.
+- Improved URL validation, duplicates, limits, and stop/reset safeguards.
+- Refreshed UI and clearer temporary-removal warning.
 
-## Installation
-
-### Chrome Web Store
-
-The Chrome Web Store installation link is not available in this repository yet. Until it is added, use the free manual installation below.
-
-### Free manual installation
-
-1. On this repository page, click **Code → Download ZIP**.
-2. Extract the ZIP. Do not select the ZIP itself during installation.
-3. In Chrome, open `chrome://extensions/`.
-4. Enable **Developer mode**.
-5. Click **Load unpacked**.
-6. Select the extracted folder containing `manifest.json`.
-7. Pin **GSC Bulk CSV Remover** from Chrome's Extensions menu for easy access.
-
-Keep the extracted folder on your computer while using the extension.
-
-## How to use
-
-1. Sign in to [Google Search Console](https://search.google.com/search-console).
-2. Select a property you own or are authorized to manage.
-3. Open **Indexing → Removals**.
-4. Open the extension and paste URLs or import your CSV/TXT file.
-5. Review the URL list carefully. Exclude URLs that should remain visible in search.
-6. Configure the limit and delay. Start with a small test batch.
-7. Click **Start** and monitor progress. Use **Stop** to interrupt the workflow.
-8. Verify the request status directly in Search Console before retrying any URLs.
-
-## Important: temporary removal
-
-This extension helps submit removal requests. It does not delete website pages, guarantee permanent removal from Google Search, improve rankings, or submit URLs for indexing.
-
-For permanent removal, address the underlying page and indexing settings using the appropriate method for your website. Review [Google's official Removals tool documentation](https://support.google.com/webmasters/answer/9689846) before submitting requests.
-
-Only use authorized properties. The extension does not bypass Google's permissions, limits, or review process. Automated actions may fail because of interface changes, permissions, or restrictions.
-
-## Privacy
-
-Read the [Privacy Policy](PRIVACY.md) for data-handling information. Removal requests are submitted to Google through your signed-in Search Console session.
-
-## Troubleshooting
-
-- **Nothing happens:** check that you are on the correct property's Removals page.
-- **Requests fail:** stop the workflow and check the page for errors, restrictions, or missing permissions.
-- **Some URLs were not processed:** check Search Console before retrying to avoid duplicate requests.
-- **The workflow breaks after an interface change:** report the steps to reproduce it through the support link below.
-
-Redact private domains, URL lists, account details, and sensitive screenshots when reporting problems.
-
-## Frequently asked questions
-
-### Is it free?
-
-Yes. No purchase or subscription is required to use this extension.
-
-### Can I remove URLs from any website?
-
-No. You must have the required permissions for the selected Search Console property.
-
-### Is this an official Google extension?
-
-No. This is an independent project.
-
-### Does this permanently remove URLs?
-
-No. It assists with temporary removal requests. Review Google's documentation for the appropriate permanent removal method.
-
-## Support
-
-[Open a GitHub issue](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues) for bug reports, installation questions, or feature suggestions.
-
-Developed by [Toriqul Islam Tusher](https://github.com/toriqulislamtusher).
+## v3.3 safety mode
+- On Start, the user grants optional access to the URL origins for HTTP checks.
+- Immediately before each submission, the extension fetches the URL with `redirect: manual` and `credentials: omit`. Only explicit 404/410 responses are eligible. 2xx, 3xx, opaque redirects, network errors, blocked or unknown statuses are skipped.
+- Skipped URLs are counted under Failed and listed with their reason; they are **not** submitted.
+- IMPORTANT: browser requests may differ from Googlebot responses; a 404/410 can be transient or vary by user-agent, IP, or authentication. Verify the URLs yourself before using this tool.
+- HTTP 404/410 is an optional conservative policy, **not** a Google Search Console requirement. A temporary removal is not permanent deletion.
+- This extension uses UI automation, which may break when Search Console changes. Test in a controlled property before publishing.

@@ -1,97 +1,90 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { width: 340px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 16px; margin: 0; background: #f8f9fa; color: #202124; box-sizing: border-box; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    h3 { margin: 0; color: #1a73e8; font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
-    .version { font-size: 11px; background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
-    
-    .upload-box { background: #ffffff; border: 2px dashed #dadce0; border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 12px; transition: all 0.2s ease; cursor: pointer; }
-    .upload-box:hover { border-color: #1a73e8; background: #f8fbff; }
-    .upload-box label { font-size: 12px; font-weight: 600; color: #1a73e8; cursor: pointer; display: block; }
-    .upload-box input { display: none; }
-    #fileName { font-size: 11px; color: #5f6368; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    
-    .textarea-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .textarea-header label { font-size: 11px; font-weight: 600; color: #5f6368; }
-    #clearTextBtn { background: none; border: none; color: #d93025; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; }
-    #clearTextBtn:hover { text-decoration: underline; }
-
-    textarea { width: 100%; height: 90px; box-sizing: border-box; padding: 10px; font-size: 11px; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; font-family: monospace; background: #fff; resize: vertical; outline: none; }
-    textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.15); }
-    
-    .control-group { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 8px; font-weight: 500; color: #3c4043; }
-    .control-row:last-child { margin-bottom: 0; }
-    .control-row input { width: 75px; padding: 5px 8px; border: 1px solid #dadce0; border-radius: 6px; text-align: center; font-size: 12px; outline: none; }
-    .control-row input:focus { border-color: #1a73e8; }
-    
-    .btn-group { display: flex; gap: 8px; margin-bottom: 12px; }
-    button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-    #startBtn { background: #1a73e8; color: #fff; box-shadow: 0 2px 4px rgba(26,115,232,0.2); }
-    #startBtn:hover { background: #1557b0; }
-    #stopBtn { background: #d93025; color: #fff; }
-    #stopBtn:hover { background: #b3261e; }
-    #clearBtn { background: #5f6368; color: #fff; flex: 0.6; }
-    #clearBtn:hover { background: #3c4043; }
-    
-    #status-box { padding: 10px 12px; background: #ffffff; border: 1px solid #dadce0; border-left: 4px solid #1a73e8; border-radius: 6px; font-size: 11px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-    #status { font-weight: 600; color: #1a73e8; word-break: break-all; margin-bottom: 6px; line-height: 1.3; }
-    .counter-row { display: flex; justify-content: space-between; font-weight: 500; font-family: monospace; color: #5f6368; margin-top: 6px; font-size: 11px; }
-    .submitted-count { color: #137333; font-weight: 600; }
-    .failed-count { color: #d93025; font-weight: 600; }
-    .remaining-count { color: #1a73e8; font-weight: 600; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h3>GSC Bulk Remover</h3>
-    <span class="version">v3.1 Pro</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GSC Bulk Remover</title><style>
+*{box-sizing:border-box}
+html,body{margin:0;width:360px;height:540px;overflow:hidden}
+body{font:12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#24334b;display:flex;flex-direction:column}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:0;border-radius:9px;font-weight:650;padding:9px 11px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 7px}
+h1{font-size:16px;letter-spacing:-.4px;margin:0;color:#165bb6}
+.tag{font-size:10px;color:#165bb6;background:#e6efff;border-radius:20px;padding:4px 7px}
+.tabs{display:flex;gap:6px;padding:0 14px 9px}
+.tabs button{flex:1;background:#e7edf5;color:#38516e;padding:9px}
+.tabs button.selected{background:#1967d2;color:#fff}
+.hidden{display:none!important}
+#workPanel,#reportPanel{min-height:0;flex:1;display:flex;flex-direction:column;gap:9px;padding:0 14px 12px}
+.notice{font-size:10.5px;color:#775115;background:#fff8e9;border:1px solid #f4dfa9;border-radius:8px;padding:7px 9px}
+.panel{background:#fff;border:1px solid #dce4ef;border-radius:11px;padding:10px}
+.entry{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1}
+.upload{display:flex;justify-content:center;align-items:center;gap:6px;border:1.5px dashed #aac4e6;border-radius:8px;color:#155dbd;font-weight:650;padding:9px;cursor:pointer}
+.upload input{display:none}
+.small{font-size:10.5px;color:#687b94;margin:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.link{color:#155dbd;background:transparent;padding:2px 4px;font-size:11px}
+textarea{display:block;width:100%;min-height:60px;flex:1;resize:none;border:1px solid #cdd8e7;border-radius:8px;padding:9px;font:11px/1.5 ui-monospace,Consolas,monospace;outline:none}
+textarea:focus{border-color:#1967d2}
+#validation{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.settings{flex-shrink:0}
+.settings summary{font-weight:650;color:#36506f;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none}
+.settings summary::-webkit-details-marker{display:none}
+.settings summary:after{content:"⌄";color:#68809d;font-size:16px}
+.settings[open] summary:after{content:"⌃"}
+.settings .row{margin-top:9px}
+.settings input{width:90px;border:1px solid #cdd8e7;border-radius:7px;padding:6px}
+.buttons{display:flex;gap:7px;flex-shrink:0}
+.buttons button{flex:1}
+.primary{background:#1967d2;color:#fff}
+.danger{background:#c83c34;color:#fff}
+.neutral{background:#e6ebf2;color:#34435a}
+.status-panel{flex-shrink:0;padding:9px 11px}
+.status{font-weight:700;overflow-wrap:anywhere}
+#currentUrl{font:10px ui-monospace,monospace;color:#687b94;overflow-wrap:anywhere;max-height:28px;overflow:auto}
+.counts{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#60728a}
+.counts strong{font-size:15px;color:#25374f}
+#failedUrls{max-height:34px;overflow:auto;font-size:10px;white-space:pre-wrap}
+.report-body{display:flex;flex-direction:column;min-height:0;flex:1;gap:9px}
+.report-counts{display:flex;justify-content:space-between;gap:4px;font-size:10px;color:#5d718b}
+.report-counts b{display:block;font-size:16px;color:#263951}
+.report-controls,.report-actions{display:flex;gap:7px}
+.report-controls select{flex:1;min-width:0;border:1px solid #cdd8e7;border-radius:8px;padding:8px;background:#fff}
+.report-controls button{flex:0}
+.report-actions button{flex:1}
+#reportList{flex:1;min-height:0;overflow:auto;border-top:1px solid #e7edf5}
+.report-item{padding:9px 0;border-bottom:1px solid #e7edf5;overflow-wrap:anywhere}
+.report-item strong{font-size:11px}
+.report-item small{display:block;color:#697d95}
+.report-item .url{font:10px ui-monospace,monospace}
+#reportMessage{min-height:13px}
+</style></head><body>
+<div class="top"><h1>GSC Bulk Remover</h1><span class="tag">v3.5.5 · Free</span></div>
+<div class="tabs"><button id="workTab" class="selected" type="button">Removal tool</button><button id="reportTab" type="button">Reports</button></div>
+<main id="workPanel">
+  <div class="notice">Safety: only verified 404/410 URLs. Live and redirect URLs are skipped. GSC removals are temporary.</div>
+  <div class="panel entry">
+    <label class="upload" for="csvFile">↥ &nbsp; Upload CSV / TXT<input id="csvFile" type="file" accept=".csv,.txt,text/plain,text/csv"></label>
+    <p id="fileName" class="small">No file selected</p>
+    <div class="row"><strong>URL list</strong><button class="link" id="clearTextBtn" type="button">Clear URLs</button></div>
+    <textarea id="urls" placeholder="Paste one URL per line, or upload a file"></textarea>
+    <p id="validation" class="small">Only http:// and https:// URLs are accepted.</p>
   </div>
-
-  <div class="upload-box" onclick="document.getElementById('csvFile').click()">
-    <label for="csvFile">📁 Upload CSV or TXT File</label>
-    <input type="file" id="csvFile" accept=".csv,.txt">
-    <div id="fileName">No file selected</div>
-  </div>
-
-  <div class="textarea-header">
-    <label for="urls">Paste URLs or edit list:</label>
-    <button id="clearTextBtn">Clear URLs</button>
-  </div>
-  <textarea id="urls" placeholder="Or paste your URLs here (one per line)..."></textarea>
-  
-  <div class="control-group">
-    <div class="control-row">
-      <label for="limit">Submit Limit:</label>
-      <input type="number" id="limit" value="100" min="1" max="1000">
-    </div>
-    <div class="control-row">
-      <label for="delay">Step Delay (ms):</label>
-      <input type="number" id="delay" value="2000" min="1000" step="500">
-    </div>
-  </div>
-
-  <div class="btn-group">
-    <button id="startBtn">Start</button>
-    <button id="stopBtn">Stop</button>
-    <button id="clearBtn">Clear All</button>
-  </div>
-
-  <div id="status-box">
-    <div id="status">Status: Ready to start</div>
-    <div style="margin-bottom: 6px;">
-      <input type="text" id="currentUrlBox" readonly placeholder="Current processing URL..." style="width: 100%; padding: 5px 6px; font-size: 11px; font-family: monospace; border: 1px solid #dadce0; border-radius: 4px; background: #f1f3f4; color: #1a73e8; box-sizing: border-box;" />
-    </div>
-    <div class="counter-row">
-      <span>Submitted: <strong id="submittedCount" class="submitted-count">0</strong></span>
-      <span>Failed: <strong id="failedCount" class="failed-count">0</strong></span>
-      <span>Remaining: <strong id="remainingCount" class="remaining-count">0</strong></span>
-    </div>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-</html>
+  <details class="panel settings" id="settings">
+    <summary>Advanced settings</summary>
+    <div class="row"><label for="limit">Submission limit</label><input id="limit" type="number" min="1" max="1000" value="100"></div>
+    <div class="row"><label for="delay">Delay (ms)</label><input id="delay" type="number" min="1500" max="30000" step="500" value="2500"></div>
+  </details>
+  <div class="buttons"><button id="setupAccessBtn" class="neutral" type="button" title="Grant website access in a separate tab">Access</button><button id="startBtn" class="primary">Start</button><button id="stopBtn" class="danger">Stop</button><button id="clearBtn" class="neutral">Reset</button></div>
+  <div class="panel status-panel"><div id="status" class="status" role="status">Ready</div><div id="currentUrl"></div><div class="counts"><span>Confirmed<br><strong id="submittedCount">0</strong></span><span>Failed<br><strong id="failedCount">0</strong></span><span>Remaining<br><strong id="remainingCount">0</strong></span></div><div id="failedUrls"></div></div>
+</main>
+<section id="reportPanel" class="hidden">
+ <div class="panel report-body">
+   <strong>Submission history</strong>
+   <p class="small">Confirmed = GSC acknowledgement. Unverified = no confirmation detected.</p>
+   <div class="report-counts"><span>Confirmed<b id="reportConfirmed">0</b></span><span>Skipped<b id="reportSkipped">0</b></span><span>Failed<b id="reportFailed">0</b></span><span>Unverified<b id="reportUnverified">0</b></span><span>Pending<b id="reportPending">0</b></span></div>
+   <div class="report-controls"><select id="reportFilter" aria-label="Filter report"><option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="skipped">Skipped</option><option value="failed">Failed</option><option value="unverified">Unverified</option><option value="pending">Pending</option></select><button id="refreshReport" class="neutral" type="button">Refresh</button></div>
+   <div id="reportList" aria-live="polite"></div>
+   <div class="report-actions"><button id="exportCsv" class="primary" type="button">Export CSV</button><button id="exportTxt" class="neutral" type="button">Export TXT</button></div>
+   <p id="reportMessage" class="small"></p>
+ </div>
+</section>
+<script src="popup.js"></script>
+</body></html>
