@@ -14,7 +14,12 @@
     .upload-box input { display: none; }
     #fileName { font-size: 11px; color: #5f6368; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     
-    textarea { width: 100%; height: 95px; box-sizing: border-box; padding: 10px; font-size: 11px; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; font-family: monospace; background: #fff; resize: vertical; outline: none; }
+    .textarea-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .textarea-header label { font-size: 11px; font-weight: 600; color: #5f6368; }
+    #clearTextBtn { background: none; border: none; color: #d93025; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; }
+    #clearTextBtn:hover { text-decoration: underline; }
+
+    textarea { width: 100%; height: 90px; box-sizing: border-box; padding: 10px; font-size: 11px; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; font-family: monospace; background: #fff; resize: vertical; outline: none; }
     textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.15); }
     
     .control-group { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
@@ -52,6 +57,10 @@
     <div id="fileName">No file selected</div>
   </div>
 
+  <div class="textarea-header">
+    <label for="urls">Paste URLs or edit list:</label>
+    <button id="clearTextBtn">Clear URLs</button>
+  </div>
   <textarea id="urls" placeholder="Or paste your URLs here (one per line)..."></textarea>
   
   <div class="control-group">
@@ -68,7 +77,7 @@
   <div class="btn-group">
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
-    <button id="clearBtn">Clear</button>
+    <button id="clearBtn">Clear All</button>
   </div>
 
   <div id="status-box">

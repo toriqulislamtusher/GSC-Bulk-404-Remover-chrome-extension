@@ -56,6 +56,19 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
   reader.readAsText(file);
 });
 
+// Clear only the URLs text box and queue
+document.getElementById('clearTextBtn').addEventListener('click', async () => {
+  document.getElementById('urls').value = '';
+  document.getElementById('csvFile').value = '';
+  document.getElementById('fileName').innerText = 'No file selected';
+  await chrome.storage.local.set({ 
+    removalQueue: [], 
+    currentUrl: '', 
+    statusText: 'URL list cleared.' 
+  });
+  updateUI();
+});
+
 document.getElementById('startBtn').addEventListener('click', async () => {
   let rawUrls = document.getElementById('urls').value.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
   const delay = parseInt(document.getElementById('delay').value, 10) || 2000;
