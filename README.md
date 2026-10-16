@@ -2,20 +2,110 @@
 
 A free Chrome Manifest V3 extension for submitting **temporary** Google Search Console URL removal requests from CSV/TXT files or pasted URLs. It automates the visible GSC interface; it does not use an official removal API.
 
-## Download and install
+## Start here: download → extract → install → use
 
-1. Download [GSC_Bulk_Remover_v3_7_1.zip](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/download/v3.7.1/GSC_Bulk_Remover_v3_7_1.zip) from the [v3.7.1 release](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/tag/v3.7.1).
-2. Extract the ZIP. Open `chrome://extensions` and enable **Developer mode**.
-3. Choose **Load unpacked** and select the extracted folder containing `manifest.json` (select the inner folder if necessary). Confirm the displayed version is **3.7.1**.
-4. Review Chrome's website-access permissions. HTTP/HTTPS access is required for safety checks; restricted access prevents Start from proceeding.
+You need **Google Chrome on a computer** and a Google account with permission to use **Removals** for your website in Google Search Console. This guide covers manual installation from GitHub. A Chrome Web Store installation link is not available in this README.
 
-## Use
+> **Before starting:** this tool sends temporary removal requests to Google. It does not delete website files. Review every URL and test with 1–3 URLs on a property you manage first. Only URLs returning HTTP **404 or 410** can pass this build’s safety check.
 
-1. Sign in to Search Console and open the intended property's **Removals** page. Only use properties and URLs you are authorized to manage.
-2. Open the extension, upload a `.csv`/`.txt` file or paste one URL per line. Review the **New**, **Submitted**, and **Review** analysis, URL list, and selected property.
-3. Set **Advanced settings**: submission limit 1–1000 (default 100), delay 1500–30000 ms (default 2500). The limit selects the first valid unique entries before local-history exclusions; it is not a guaranteed count of new submissions.
-4. Click **Start**. Processing begins without a separate confirmation prompt. Before starting, the extension checks URL membership against the property's `resource_id` (domain/subdomains or URL prefix) and checks website access.
-5. Monitor progress and review **Reports** and Search Console. **Confirmed** means visible GSC feedback was detected, not independent server-side verification or proof of disappearance from search.
+### 1. Download the extension
+
+**[Download GSC Bulk Remover v3.7.1 ZIP](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/download/v3.7.1/GSC_Bulk_Remover_v3_7_1.zip)**
+
+Alternatively, open the [v3.7.1 release page](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/tag/v3.7.1), expand **Assets**, and choose **GSC_Bulk_Remover_v3_7_1.zip**. Use that named extension ZIP for this guide; GitHub also lists automatic source-code archives.
+
+### 2. Extract the ZIP into a folder you will keep
+
+1. Find the downloaded ZIP, usually in **Downloads**.
+2. On Windows, right-click it → **Extract All…** → choose a permanent folder → **Extract**. On macOS, double-click the ZIP to extract it, then move the extracted folder somewhere you will keep it.
+3. Open the extracted folder and check that you can see **manifest.json**, **popup.html**, **popup.js**, and the **icons** folder. If these files are inside another folder, open that inner folder.
+
+**Keep this extracted folder after installation.** Chrome loads the extension from it. Do not select the ZIP itself, move the folder, or delete it while using the extension.
+
+### 3. Install in Chrome
+
+1. Open Chrome, type **chrome://extensions** in the address bar, and press **Enter**.
+2. Turn on **Developer mode** in the upper-right corner.
+3. Click **Load unpacked** in the upper-left area.
+4. Select the extracted folder that directly contains **manifest.json**, then confirm the folder selection.
+5. Check that **GSC Bulk CSV Remover** appears, is enabled, and shows version **3.7.1**.
+6. Click Chrome’s **Extensions** puzzle icon beside the address bar, then pin **GSC Bulk CSV Remover** so you can open it easily.
+
+Chrome may show a broad website-access warning because this build checks HTTP/HTTPS URLs. Review the [permissions and privacy information](#permissions-and-privacy) before using it. Managed work or school browsers may prevent Developer mode or manual extension installation; ask your administrator if these controls are unavailable.
+
+### 4. Open the correct website in Search Console
+
+1. Open [Google Search Console](https://search.google.com/search-console) and sign in.
+2. Choose the website/property that owns the URLs you want to remove.
+3. In the left menu, open **Indexing → Removals**.
+4. Keep that tab open and stay on the same property while the batch runs. Close any existing removal dialog before starting.
+5. Click the pinned **GSC Bulk CSV Remover** icon.
+
+### 5. Add URLs and start a small batch
+
+Paste full URLs, one per line, or click **Upload CSV / TXT** and choose a file. Uploaded files must be no larger than **2 MB**. A plain TXT file with one URL per line is the simplest format:
+
+```text
+https://your-website.com/old-page-1/
+https://your-website.com/old-page-2/
+```
+
+Replace these example URLs with your own. URLs must begin with **http://** or **https://** and belong to the selected Search Console property.
+
+Review the URL analysis before starting:
+
+| Label | What it means |
+| --- | --- |
+| **New** | No blocking local history was found. This does not yet mean its HTTP check passed. |
+| **Submitted** | Local history records a confirmed request or active duplicate. It will be excluded from new requests. |
+| **Review** | A previous request has an uncertain outcome. Check it in GSC before allowing any retry. |
+
+1. Expand **Advanced settings**. For your first test, set **Submission limit** to **1–3** and leave **Delay** at **2500 ms**.
+2. Check the selected property and URL list again.
+3. Click **Start**. **There is no second confirmation prompt:** processing starts immediately.
+4. The extension checks each URL’s HTTP status before attempting a request. Live pages, redirects, blocked responses, and network errors are skipped.
+5. Leave Chrome and the original GSC tab open. Avoid switching properties, reloading the tab, or manually using GSC’s request dialogs while the batch runs. You can reopen the popup to inspect progress.
+
+Available limits: **1–1000** entries (default **100**); delay: **1500–30000 ms** (default **2500**). The limit selects the first valid unique entries before history exclusions; it is not a guaranteed number of new submissions.
+
+### 6. Check results and save a report
+
+- When the queue finishes, the popup shows **Completed** and **Remaining 0**. Check the outcome counts and the **Reports** tab.
+- **Confirmed** means a new matching request row was detected in GSC. Google may still show **Processing request**; this does not prove removal from search is complete.
+- **Skipped** URLs were not newly submitted by the extension. Read their reasons in Reports.
+- **Failed** or **Unverified** entries need attention. Inspect GSC before retrying; a request may already have reached Google.
+- In **Reports**, choose **Current batch**, **All history**, or **Previous batch**, select a status filter if needed, then click **Export CSV** or **Export TXT**. Keep reports private if they contain sensitive URLs.
+
+### Stop, Resume, Reset, and retry
+
+- **Stop:** stops further processing and keeps the remaining queue. It cannot undo a request already sent.
+- **Resume:** continues the saved queue only when the original GSC tab/property is available, no removal dialog is open, and no unresolved unverified queued request blocks it.
+- **Reset:** use after stopping to clear the current batch and input draft. It keeps historical submission records and does not cancel requests in GSC.
+- **I checked GSC — allow retry:** available on eligible history records in Reports. Use only after manually checking GSC and deciding a retry is appropriate. It preserves the historical record and allows retry; it does not submit a request by itself. Do not use it for a request that is still active.
+
+## Common installation and usage problems
+
+| What you see | What to do |
+| --- | --- |
+| “Manifest file is missing or unreadable” / “Could not load manifest” | Extract the ZIP first. Select the folder directly containing manifest.json, not its parent folder or the ZIP. |
+| No Load unpacked button | Turn on Developer mode on chrome://extensions. If your organization blocks it, contact your administrator. |
+| Extension icon is missing | Open Chrome’s Extensions menu, check the extension is enabled, and pin it. |
+| “Open the Google Search Console Removals page first” | Open the correct property’s Removals page, make that tab active, and reopen the extension. |
+| URLs do not match the selected property | Choose the right GSC property and check the URLs’ protocol, host, and path. Do not submit URLs you do not manage. |
+| Website access is restricted | Open chrome://extensions → GSC Bulk CSV Remover → Details → Site access. This build’s Start message asks for On all sites; review the broad access described below before granting it. |
+| URLs are skipped | Read the HTTP status/reason in Reports. Only verified 404/410 responses qualify; a redirect or a visually similar “not found” page is insufficient. |
+| Processing pauses or Resume is unavailable | Check GSC for an already-sent request and any open dialog. Return to the original tab/property. Review unverified outcomes before retrying. |
+| Everything says Submitted or Review | Inspect local history in Reports and GSC. Reset does not erase history or make those URLs automatically eligible again. |
+
+## Updating an existing manual installation
+
+1. Stop any active batch and **export reports/history before updating**.
+2. Download and extract the new release into a temporary folder.
+3. Copy the new version’s files into the **same folder already loaded in Chrome**, replacing the matching files. Keep the original folder path.
+4. Open **chrome://extensions**, find the extension, and click its **Reload** control. Check the displayed version.
+5. Reload the GSC page before starting a fresh reviewed batch. Old batches without saved property information cannot Resume in v3.7.1.
+
+Avoid removing/reinstalling the extension or loading a second copy from a different folder unless you intend to use a separate installation. Local history may not transfer to another extension ID, Chrome profile, or device. A CSV/TXT report is a backup for your reference; this version has no history-import feature.
 
 ## v3.7.1 features
 
