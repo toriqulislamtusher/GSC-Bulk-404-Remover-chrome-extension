@@ -56,7 +56,22 @@ if (!window.gscBulkRemoverLoaded) {
     element.dispatchEvent(new KeyboardEvent('keyup', { key: 'a', bubbles: true }));
   }
 
+  function matchingRequestRows(url) {
+    return Array.from(document.querySelectorAll('tr, [role="row"]')).filter(row =>
+      Array.from(row.querySelectorAll('td, [role="cell"], a')).some(cell => cell.textContent.trim() === url)
+    ).length;
+  }
+  let processing = false;
+  async function ensureRunning() {
+    const state = await chrome.storage.local.get(['isRunning']);
+    if (!state.isRunning) throw new Error('WORKFLOW_STOPPED');
+  }
   async function processQueue() {
+    if (processing) return;
+    processing = true;
+    try { await processNext(); } finally { processing = false; }
+  }
+  async function processNext() {
     const data = await chrome.storage.local.get(['removalQueue', 'isRunning', 'stepDelay', 'processedCount', 'failedCount']);
     const delay = data.stepDelay || 2000;
 
@@ -66,8 +81,8 @@ if (!window.gscBulkRemoverLoaded) {
     }
 
     if (!data.removalQueue || data.removalQueue.length === 0) {
-      await chrome.storage.local.set({ isRunning: false, currentUrl: '', statusText: 'All URLs successfully processed!' });
-      alert("GSC Bulk Remover: All URLs have been processed successfully!");
+      await chrome.storage.local.set({ isRunning: false, currentUrl: '', statusText: 'Queue finished. Check Search Console for request status.' });
+      
       return;
     }
 
@@ -81,13 +96,16 @@ if (!window.gscBulkRemoverLoaded) {
     });
 
     try {
+      const previousRows = matchingRequestRows(currentUrl);
       const newReqBtn = findButtonByText(['New request', 'নতুন অনুরোধ']);
       if (!newReqBtn) {
         await chrome.storage.local.set({ isRunning: false, statusText: "Error: 'New request' button not found!" });
         return;
       }
+      await ensureRunning();
       simulateClick(newReqBtn);
       await sleep(delay);
+      await ensureRunning();
 
       const allInputs = Array.from(document.querySelectorAll('input[type="text"], input:not([type])'))
                              .filter(el => isVisible(el) && !el.readOnly && !el.disabled && el.getAttribute('aria-label') !== 'Search');
@@ -101,29 +119,46 @@ if (!window.gscBulkRemoverLoaded) {
       urlInput.focus();
       setNativeValue(urlInput, currentUrl);
       await sleep(1000);
+      await ensureRunning();
 
       const nextBtn = findButtonByText(['Next', 'পরবর্তী']);
       if (!nextBtn) {
         await chrome.storage.local.set({ isRunning: false, statusText: "Error: 'Next' button not found!" });
         return;
       }
+      await ensureRunning();
       simulateClick(nextBtn);
       await sleep(delay);
+      await ensureRunning();
 
       await sleep(1000);
+      await ensureRunning();
       const submitBtn = findButtonByText(['Submit request', 'অনুরোধ জমা দিন']);
       
       let isSuccess = false;
       if (submitBtn) {
+        await ensureRunning();
         simulateClick(submitBtn);
         await sleep(delay + 1000);
-        isSuccess = true;
+      await ensureRunning();
+        // Count success only when a new request row for this exact URL appears.
+        for (let attempt = 0; attempt < 10; attempt++) {
+          await ensureRunning();
+          if (matchingRequestRows(currentUrl) > previousRows) { isSuccess = true; break; }
+          await sleep(500);
+          await ensureRunning();
+        }
+        if (!isSuccess) {
+          await chrome.storage.local.set({ isRunning: false, statusText: 'Acceptance unverified. Check Search Console before restarting. Current URL remains queued.' });
+          return;
+        }
       } else {
         console.warn("Submit button not available, skipping live/invalid URL...");
         const cancelBtn = findButtonByText(['Cancel', 'Close', 'OK', 'বাতিল করুন', 'বন্ধ করুন', 'Dismiss']);
         if (cancelBtn) {
           simulateClick(cancelBtn);
           await sleep(1500);
+      await ensureRunning();
         }
       }
 
@@ -131,6 +166,7 @@ if (!window.gscBulkRemoverLoaded) {
       if (closeErrorBtn) {
         simulateClick(closeErrorBtn);
         await sleep(1200);
+      await ensureRunning();
       }
 
       const latestData = await chrome.storage.local.get(['removalQueue', 'isRunning', 'processedCount', 'failedCount']);
@@ -154,9 +190,10 @@ if (!window.gscBulkRemoverLoaded) {
         statusText: isSuccess ? 'URL submitted successfully' : 'URL failed / skipped'
       });
 
-      processQueue();
+      await processNext();
 
     } catch (err) {
+      if (err.message === 'WORKFLOW_STOPPED') return;
       console.error("GSC Bulk Remover Error:", err);
       const latestData = await chrome.storage.local.get(['removalQueue', 'isRunning', 'failedCount']);
       if (!latestData.isRunning) return;
@@ -168,7 +205,7 @@ if (!window.gscBulkRemoverLoaded) {
         failedCount: currentFailed,
         statusText: 'Error occurred, URL failed' 
       });
-      processQueue();
+      await processNext();
     }
   }
 
