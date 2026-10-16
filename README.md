@@ -1,53 +1,54 @@
-## v3.4 Report & History
+# GSC Bulk CSV Remover v3.7.0
 
-- Reports tab: confirmed, skipped, failed, unverified and pending URLs with reasons.
-- Export filtered reports as CSV or TXT. History persists in local Chrome storage.
-- Previously confirmed or unverified URLs are excluded from new runs until the user reviews their records.
-- Confirmation is based on visible GSC UI feedback, not an official API acknowledgement.
-- All HTTP safety checks remain fail-closed; 404/410-only mode is not a guarantee of Googlebot equivalence.
-- Reports are local to this Chrome profile and may contain sensitive URLs.
-- Existing 404/red-arrow/trash-bin icons preserved.
+A free Chrome Manifest V3 extension for submitting **temporary** Google Search Console URL removal requests from CSV/TXT files or pasted URLs. It automates the visible GSC interface; it does not use an official removal API.
 
-# GSC Bulk CSV Remover v3.2.0
+## Download and install
 
-A free, locally running Chrome Manifest V3 extension that helps submit temporary Google Search Console URL removal requests from CSV/TXT or pasted URL lists.
+1. Download the [v3.7.0 ZIP](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/download/v3.7.0/GSC_Bulk_Remover_v3_7_0_Publish_Ready.zip) from the [v3.7.0 release](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/releases/tag/v3.7.0).
+2. Extract the ZIP. Open `chrome://extensions` and enable **Developer mode**.
+3. Choose **Load unpacked** and select the extracted folder containing `manifest.json` (select the inner folder if necessary). Confirm the displayed version is **3.7.0**.
+4. Review Chrome's website-access permissions. HTTP/HTTPS access is required for safety checks; restricted access prevents Start from proceeding.
 
-## Important
-- Search Console removals are **temporary**, not permanent deletions. Remove or block the content appropriately if permanent removal is required.
-- Only use on properties and URLs you are authorized to manage.
-- **Review the selected Search Console property and URL list before starting.** This extension does not verify property ownership or URL membership automatically.
-- Google can change Search Console's interface. If submission cannot be confirmed, the extension **pauses** rather than claiming success. Check the request in Search Console before restarting; avoid duplicate requests.
-- Do not submit excessive requests or use the extension to bypass Google's controls.
+## Use
 
-## Install locally
-1. Extract the ZIP.
-2. Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked**.
-3. Select the extracted `GSC_Bulk_Remover_v3_2` folder (the folder containing `manifest.json`).
-4. Open your property's Search Console **Removals** page.
-5. Upload a `.csv` or `.txt`, or paste one URL per line; review the list.
-6. Choose a limit and delay, then click **Start** and confirm.
+1. Sign in to Search Console and open the intended property's **Removals** page. Only use properties and URLs you are authorized to manage.
+2. Open the extension, upload a `.csv`/`.txt` file or paste one URL per line. Review the **New**, **Submitted**, and **Review** analysis, URL list, and selected property.
+3. Set **Advanced settings**: submission limit 1–1000 (default 100), delay 1500–30000 ms (default 2500). The limit selects the first valid unique entries before local-history exclusions; it is not a guaranteed count of new submissions.
+4. Click **Start**. Processing begins without a separate confirmation prompt. Before starting, the extension checks URL membership against the property's `resource_id` (domain/subdomains or URL prefix) and checks website access.
+5. Monitor progress and review **Reports** and Search Console. **Confirmed** means visible GSC feedback was detected, not independent server-side verification or proof of disappearance from search.
 
-## Notes
-- The CSV parser handles simple comma/semicolon/tab-separated URL fields, not fully quoted multiline CSV records.
-- The extension does not call a Google Search Console removal API; it interacts with the visible interface, which may vary by language and change over time.
-- A confirmed counter requires visible page feedback; it is not a server-side verification.
-- The extension stores its queue and counters in local Chrome extension storage.
-- To publish an update, test on a property you control, increment the manifest version, and submit a new ZIP through Chrome Web Store Developer Dashboard.
+## v3.7.0 features
 
-## Changelog
-### 3.2.0
-- Safer submission confirmation and pause-on-uncertainty behavior.
-- Fixed inline HTML event handler incompatible with MV3 extension CSP.
-- Improved URL validation, duplicates, limits, and stop/reset safeguards.
-- Refreshed UI and clearer temporary-removal warning.
+- Persistent URL draft and uploaded filename, scrollable popup, and three-column URL analysis.
+- Local-history exclusions for previously confirmed URLs and recorded active duplicates. Unverified prior requests require review and are not automatically retried.
+- Separate active-duplicate classification when GSC displays its explicit duplicate-request dialog; this is not a complete scan of existing GSC requests.
+- Batch timestamp, progress and percentage, plus Confirmed/Skipped/Failed/Remaining counters.
+- Reports for current batch, all history, or a previous batch, with status filters and CSV/TXT export of the selected report.
+- **Stop** preserves the queue. **Resume** requires the original GSC Removals tab, a responding content script, no detected open removal dialog, and no unverified queued request in that batch.
+- **Reset** clears the current batch and draft after stopping, while preserving submission history. It does not cancel requests already sent to Google.
 
-## v3.3 safety mode
-- Website access is requested at install/update time for HTTP safety checks; no separate access tab is used.
-- Immediately before each submission, the extension fetches the URL with `redirect: manual` and `credentials: omit`. Only explicit 404/410 responses are eligible. 2xx, 3xx, opaque redirects, network errors, blocked or unknown statuses are skipped.
-- Skipped URLs are counted under Failed and listed with their reason; they are **not** submitted.
-- IMPORTANT: browser requests may differ from Googlebot responses; a 404/410 can be transient or vary by user-agent, IP, or authentication. Verify the URLs yourself before using this tool.
-- HTTP 404/410 is an optional conservative policy, **not** a Google Search Console requirement. A temporary removal is not permanent deletion.
-- This extension uses UI automation, which may break when Search Console changes. Test in a controlled property before publishing.
+## Safety and limitations
 
-### Website permissions (v3.5.6)
-This edition requires HTTP/HTTPS host access at install/update time to verify submitted URL statuses without per-domain prompts. Chrome may display a broad website-access warning. Users can restrict access in Chrome, in which case Start fails closed. This permission may require additional Chrome Web Store review and justification.
+- Immediately before each submission, the extension sends an HTTP GET with `redirect: manual`, `credentials: omit`, `cache: no-store`, and a 12-second timeout. Only explicit **404/410** responses are eligible. Live responses, redirects (including opaque redirects), blocked/unknown responses, and network errors are skipped without submission.
+- This 404/410 policy is mandatory in this build, not a Google requirement. Browser responses may differ from Googlebot and vary with time, IP, user agent, or authentication. Verify the URLs yourself.
+- Property matching checks the page URL and URL list; it does not independently verify ownership or permissions with Google. Review the intended property and removal scope yourself.
+- Removals are temporary and do not delete website content. Permanent removal requires appropriate action on source content and indexing controls.
+- Missing visible submission confirmation produces an unverified record and pauses processing. Check GSC manually before retrying. Stop cannot undo an already submitted request; review open dialogs before resuming.
+- History is local and is not a complete GSC record. It does not sync across devices, Chrome profiles, or separately installed extension IDs. There is no popup control to resolve an unverified historical record; Reset retains it. Resume is guarded, not guaranteed after tab reload, suspension, or browser interruption.
+- Google interface or language changes may break automation. The code handles English and some Bengali labels, not every language. Do not bypass Google's controls or submit excessive requests.
+- Input parsing supports simple comma-, semicolon-, or tab-separated fields and one URL per line; it is not a full quoted/multiline CSV parser.
+- The [v3.7.0 validation report](TEST_REPORT_3.7.0.md) records static checks, but no completed Chromium visual test or authenticated GSC submission/tab-switching end-to-end test. Test cautiously on a property you control.
+
+## Permissions and privacy
+
+The manifest declares `activeTab`, `scripting`, and `storage`, plus host access to `https://search.google.com/*`, `http://*/*`, and `https://*/*`. Chrome may show a broad website-access warning. The normal v3.7.0 flow checks required access at Start; it does not request optional per-domain access in a separate setup tab.
+
+Draft URLs, filenames, settings, queue, progress, and history are stored in `chrome.storage.local`. History includes URLs, outcomes, reasons, HTTP statuses, batch IDs, and timestamps. Reports are generated locally and may contain sensitive URLs; exported files remain wherever you save them. Reset does not erase history.
+
+Safety checks contact destination websites, which receive requested URLs and normal network metadata such as your IP address; request credentials are omitted. Google receives removal requests through your signed-in GSC session. The current code has no developer-operated upload endpoint, analytics, or telemetry and does not request passwords. See [PRIVACY.md](PRIVACY.md).
+
+## More information
+
+- [v3.7.0 release notes](RELEASE_NOTES_3.7.0.md)
+- [Changelog](CHANGELOG.md)
+- [Report an issue](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues): remove sensitive URLs and account information before posting.
