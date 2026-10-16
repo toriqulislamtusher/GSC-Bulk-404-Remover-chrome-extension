@@ -133,7 +133,7 @@ Avoid removing/reinstalling the extension or loading a second copy from a differ
 - History is local and is not a complete GSC record. It does not sync across devices, Chrome profiles, or separately installed extension IDs. After manually checking GSC, use **I checked GSC — allow retry** on a history record to permit retry without erasing the record. Do not allow retry for a request that is still active. Resume is guarded, not guaranteed after tab reload, suspension, or browser interruption.
 - Google interface or language changes may break automation. The code handles English and some Bengali labels, not every language. Do not bypass Google's controls or submit excessive requests.
 - Input parsing supports simple comma-, semicolon-, or tab-separated fields and one URL per line; it is not a full quoted/multiline CSV parser.
-- See [v3.7.2 validation](TEST_REPORT_3.7.2.md) for automated and Chrome local-harness test coverage. A user-started live Chrome batch completed with 9/9 Confirmed, 0 Failed, and 0 Remaining; all nine URLs appeared in GSC as Processing request. Other live safety scenarios remain untested. Test cautiously on a property you control.
+- See [v3.7.2 validation](TEST_REPORT_3.7.2.md) for automated mock test coverage; earlier v3.7.1 browser observations are described separately. A user-started live Chrome batch completed with 9/9 Confirmed, 0 Failed, and 0 Remaining; all nine URLs appeared in GSC as Processing request. Other live safety scenarios remain untested. Test cautiously on a property you control.
 
 ## Permissions and privacy
 
@@ -146,8 +146,8 @@ Safety checks contact destination websites, which receive requested URLs and nor
 ## Maintainer, testing, and support
 
 - **Project maintainer:** [toriqulislamtusher](https://github.com/toriqulislamtusher). Review the [source code and change history](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/commits/main/) before granting website access.
-- **Observed experience:** in one user-started Chrome v3.7.2 batch, the popup reached **9/9 Confirmed, 0 Failed, 0 Remaining**. The same nine URLs appeared in GSC as **Processing request**. This is one observed batch, not proof that every property or Google interface variant works.
-- **Automated checks:** 34 isolated regression checks passed for URL/property guards, status gating, history handling, counters, and confirmation logic. See the [test report and its remaining limitations](TEST_REPORT_3.7.2.md).
+- **Observed experience:** in one user-started Chrome v3.7.1 batch, the popup reached **9/9 Confirmed, 0 Failed, 0 Remaining**. The same nine URLs appeared in GSC as **Processing request**. This is one observed batch, not proof that every property or Google interface variant works.
+- **Automated checks:** 39 isolated regression checks passed for URL/property guards, status gating, history handling, counters, and confirmation logic. See the [test report and its remaining limitations](TEST_REPORT_3.7.2.md).
 - **Privacy and support:** read [PRIVACY.md](PRIVACY.md) and [report reproducible issues](https://github.com/toriqulislamtusher/GSC-Bulk-Remover-chrome-extension/issues). Include the extension version and error text; redact private URLs and account details.
 - **Official reference:** Google’s [Removals tool documentation](https://support.google.com/webmasters/answer/9689846?hl=en) explains temporary removal and the steps needed for permanent removal. Google controls request processing and search results.
 
